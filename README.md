@@ -23,3 +23,7 @@ Message (SwiftData) ──> ChatViewModel ──> ChatView
                               ↓
                        LLMEvaluator (MLX)
 ```
+
+---
+
+Inspired by [Fullmoon](https://github.com/mainframecomputer/fullmoon-ios)
