@@ -1,258 +1,462 @@
-# Development Plan - Local LLM Chat iOS App
+# lil Claudio - V0 Implementation Plan 📟
 
-## 📋 Project Overview
+## 🎯 Project Overview
 
-### Pitch
-Minimalist iOS/macOS app to chat with a local LLM (Llama 3.2 1B) without internet. Inspired by Apple Notes and Fullmoon with a liquid glass design aesthetic. User can customize the system prompt.
+**Goal:** Build a minimal iOS chat app (iOS 26.0+) with local LLM (Llama 3.2 1B) using SwiftUI, MLX, and TDD methodology.
 
-### Goal
-Build a **V1 Ultra-Minimal** functional prototype with Claude Code, focusing on core features only.
+**Flow:** Splash Screen (1-2s) → Model Download (with progress) → Chat Screen
 
-### Tech Stack
-- **Language:** Swift 5.9+
-- **UI Framework:** SwiftUI
-- **Minimum iOS:** 17.0+
-- **LLM Framework:** MLX + MLXLLM (Apple)
-- **Persistence:** SwiftData
-- **Model:** Llama 3.2 1B Instruct 4-bit (~700 MB)
-- **Approach:** Test-Driven Development (TDD)
+**Key Features:**
+- Send message and get streaming response from local LLM
+- Stop generation mid-stream (break button)
+- No chat persistence (messages cleared on app restart)
+- Default system prompt: "you are a helpful assistant"
 
 ---
 
-## 🎯 V1 Scope - Ultra Minimal
+## 🎨 Design Tokens (From Figma)
 
-### What's IN V1
-- ✅ Single chat thread (no history, no multiple conversations)
-- ✅ Model download on first launch
-- ✅ Send message + receive streaming response
-- ✅ System prompt customization in settings
-- ✅ Liquid glass design (minimal)
-- ✅ Persistence of messages in current session
-
-### What's OUT V1 (for V2)
-- ❌ Multiple conversations / conversation history
-- ❌ Sidebar with conversation list
-- ❌ Swipe to delete conversations
-- ❌ Search in messages
-- ❌ Export conversations
-- ❌ Multiple models support
-
----
-
-## 🔮 V2 Roadmap (After V1)
-
-### Feature: Multiple Conversations & History
-
-**Goal:** Allow users to create, manage, and switch between multiple chat conversations.
-
-**Data Model Changes:**
+### Colors
 ```swift
-// Add Thread model
-@Model
-final class Thread {
-    @Attribute(.unique) var id: UUID
-    var title: String
-    var timestamp: Date
-    
-    @Relationship var messages: [Message] = []
-    
-    var sortedMessages: [Message] {
-        messages.sorted { $0.timestamp < $1.timestamp }
+// Background Colors
+static let surfaceLight = Color(hex: "f9fafb")      // Main background
+static let backgroundWhite = Color.white             // Splash background
+
+// Text Colors
+static let textPrimary = Color.black                 // Main text (#000000)
+static let textSecondary = Color(hex: "6a7282")      // Placeholder text
+static let textNeutralDark = Color(hex: "262629")    // Header text
+
+// UI Element Colors
+static let accentPrimary = Color(hex: "f28c59")      // Progress bar (orange/coral)
+static let neutralGray200 = Color(hex: "d9dbe1")     // Input background, progress track
+static let accentBlue = Color(hex: "0088ff")         // Buttons (if needed)
+```
+
+### Typography
+```swift
+// Splash Screen
+static let splashTitle = Font.custom("Crimson Pro", size: 44)  // "lil claudio"
+
+// Chat Screen
+static let headerTitle = Font.custom("Inter", size: 16).weight(.medium)  // "chat"
+static let inputText = Font.custom("Inter", size: 16).weight(.medium)    // Input placeholder
+static let bodyText = Font.system(size: 16, weight: .regular)
+```
+
+### SF Symbols (Icons)
+```swift
+// Buttons
+static let sendArrow = "arrow.up"           // Send message button
+static let stopSquare = "stop.fill"         // Break/stop generation
+static let menuIcon = "line.3.horizontal"   // Left header button
+static let helpIcon = "questionmark.circle" // Right header button
+
+// Logo
+static let pagerEmoji = "📟"                // App icon/logo
+```
+
+### Spacing & Dimensions
+```swift
+static let cornerRadiusLarge: CGFloat = 26   // Input field
+static let cornerRadiusSmall: CGFloat = 100  // Buttons (circular)
+static let buttonSize: CGFloat = 40          // Icon buttons
+static let headerButtonSize: CGFloat = 48    // Header buttons
+static let inputHeight: CGFloat = 52         // Input field height
+static let progressHeight: CGFloat = 6       // Progress bar height
+static let paddingStandard: CGFloat = 16     // Standard padding
+```
+
+---
+
+## 📋 Implementation Steps
+
+### 🧑‍🏫 Xcode Basics (For Beginners)
+
+Before we start, here are some Xcode shortcuts you'll use frequently:
+
+**Building & Running:**
+- `⌘B` - Build project (compile code)
+- `⌘R` - Run app in simulator
+- `⌘.` - Stop running app
+- `⌘U` - Run tests
+
+**Simulator:**
+- After pressing `⌘R`, Xcode will open an iPhone simulator
+- The simulator appears as a separate window showing an iPhone screen
+- To change which iPhone to simulate: Xcode menu bar > Product > Destination > Choose iPhone model
+
+**Common Issues:**
+- If simulator is slow: Use iPhone 15 (not Pro Max) for better performance
+- If build fails: Clean build folder with `⌘⇧K`, then rebuild with `⌘B`
+- If tests fail: Make sure you're in the right target (app vs tests)
+
+---
+
+### **Phase 1: Foundation (Steps 1-2)**
+
+---
+
+#### **Step 1: Project Setup & Dependencies**
+**Time:** 30-45 minutes
+**Goal:** Create Xcode project + add MLX packages
+
+**📚 What you'll learn:**
+- How to create an iOS project targeting iOS 26.0+
+- How to add Swift Package Manager dependencies
+- Project folder structure organization
+- How to verify packages installed correctly
+
+**🎯 Tasks:**
+
+**1.1 Create New Xcode Project**
+
+1. Open Xcode
+2. Click "Create New Project" (or File > New > Project)
+3. Choose template:
+   - Platform: **iOS**
+   - Template: **App**
+   - Click **Next**
+4. Fill in details:
+   - Product Name: **lil Claudio**
+   - Team: Your Apple ID (or leave as "None")
+   - Organization Identifier: **com.yourname** (replace with your name)
+   - Interface: **SwiftUI** ⚠️ IMPORTANT
+   - Language: **Swift**
+   - Storage: **None** (we'll use SwiftData later)
+   - Include Tests: **✓ Checked**
+   - Click **Next**
+5. Save location: Choose `/Users/romainlagrange/Desktop/VibeCoding/lil Claudio/`
+6. Click **Create**
+
+**1.2 Add MLX Swift Packages**
+
+1. In Xcode menu: **File > Add Package Dependencies...**
+2. In the search bar (top right), paste: `https://github.com/ml-explore/mlx-swift`
+3. Click **Add Package** (bottom right)
+4. Wait for package to resolve (takes 30-60 seconds)
+5. When prompted, select: **MLX** library, click **Add Package**
+6. Repeat steps 1-2 for: `https://github.com/ml-explore/mlx-swift-examples`
+7. When prompted, select these libraries (hold ⌘ to select multiple):
+   - **MLXLLM**
+   - **MLXLMCommon**
+   - **MLXRandom**
+8. Click **Add Package**
+
+**1.3 Create Folder Structure**
+
+1. In Xcode's left sidebar (Navigator), right-click on "lil Claudio" folder
+2. Select **New Group**
+3. Name it **App**
+4. Repeat to create these folders:
+   ```
+   lil Claudio/
+   ├── App/           (for main app file)
+   ├── Features/      (for screens)
+   │   ├── Splash/
+   │   ├── Download/
+   │   └── Chat/
+   ├── Core/          (for shared code)
+   │   ├── LLM/
+   │   └── Design/
+   └── Tests/         (already created)
+   ```
+5. Drag `lilClaudioApp.swift` into the **App** folder
+
+**✅ Validation Checkpoints:**
+
+Test your setup:
+1. Press `⌘B` to build → should succeed with "Build Succeeded" ✅
+2. Press `⌘R` to run → simulator should open showing "Hello, World!" ✅
+3. In code, add this line at the top of any file:
+   ```swift
+   import MLX
+   import MLXLLM
+   ```
+   - If no red errors appear, packages are installed! ✅
+
+**🐛 Troubleshooting:**
+- **"Package resolution failed"**:
+  - Go to File > Packages > Reset Package Caches
+  - Try adding packages again
+- **"Build failed - no such module MLX"**:
+  - Check that you added packages to the correct target
+  - Go to Project settings > Targets > lil Claudio > General > Frameworks
+  - MLX, MLXLLM should be listed there
+
+**💾 Commit:** `feat: initial project setup with MLX dependencies`
+
+**🎓 Beginner Tip:** After this step, your Xcode should look like a file tree on the left, code editor in the middle, and various panels on the right. This is your main workspace!
+
+---
+
+#### **Step 2: Design Tokens & System**
+**Time:** 20-30 minutes
+**Goal:** Create reusable design constants from Figma
+
+**📚 What you'll learn:**
+- How to organize design tokens in SwiftUI
+- Creating color extensions with hex values
+- Font system in SwiftUI
+- Reusable constants for consistency
+
+**🎯 Tasks:**
+
+**2.1 Create DesignTokens.swift**
+
+1. Right-click on **Core/Design** folder
+2. Select **New File...**
+3. Choose **Swift File**
+4. Name it **DesignTokens.swift**
+5. Click **Create**
+
+**2.2 Add Color Extensions**
+
+Copy this code into **DesignTokens.swift**:
+
+```swift
+import SwiftUI
+
+// MARK: - Color Extension with Hex Support
+extension Color {
+    /// Initialize a Color from a hex string (e.g., "f9fafb")
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue:  Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
-    
-    init(title: String = "New conversation") {
-        self.id = UUID()
-        self.title = title
-        self.timestamp = Date()
-    }
+
+    // MARK: - Background Colors
+    static let surfaceLight = Color(hex: "f9fafb")
+    static let backgroundWhite = Color.white
+
+    // MARK: - Text Colors
+    static let textPrimary = Color.black
+    static let textSecondary = Color(hex: "6a7282")
+    static let textNeutralDark = Color(hex: "262629")
+
+    // MARK: - UI Colors
+    static let accentPrimary = Color(hex: "f28c59")
+    static let neutralGray200 = Color(hex: "d9dbe1")
+    static let accentBlue = Color(hex: "0088ff")
 }
 
-// Update Message model
-@Model
-class Message {
-    // ... existing properties
-    @Relationship(inverse: \Thread.messages) var thread: Thread?
+// MARK: - Typography
+extension Font {
+    static let splashTitle = Font.custom("Crimson Pro", size: 44)
+    static let headerTitle = Font.custom("Inter", size: 16).weight(.medium)
+    static let inputText = Font.custom("Inter", size: 16).weight(.medium)
+    static let bodyText = Font.system(size: 16, weight: .regular)
+}
+
+// MARK: - SF Symbols
+enum SFSymbols {
+    static let sendArrow = "arrow.up"
+    static let stopSquare = "stop.fill"
+    static let menuIcon = "line.3.horizontal"
+    static let helpIcon = "questionmark.circle"
+    static let pagerEmoji = "📟"
+}
+
+// MARK: - Spacing
+enum Spacing {
+    static let xs: CGFloat = 4
+    static let sm: CGFloat = 8
+    static let md: CGFloat = 16
+    static let lg: CGFloat = 24
+    static let xl: CGFloat = 32
+}
+
+// MARK: - Dimensions
+enum Dimensions {
+    static let cornerRadiusLarge: CGFloat = 26
+    static let cornerRadiusSmall: CGFloat = 100
+    static let buttonSize: CGFloat = 40
+    static let headerButtonSize: CGFloat = 48
+    static let inputHeight: CGFloat = 52
+    static let progressHeight: CGFloat = 6
 }
 ```
 
-**UI Changes:**
-- **Sidebar/List View:** Display all conversations sorted by date
-- **Navigation:** Tap conversation → open chat
-- **Actions:** Swipe to delete, pull to refresh
-- **New conversation button:** [+] in navigation bar
+**2.3 Create Preview to Test**
 
-**Architecture Changes:**
-- Update `ChatViewModel` to work with `currentThread: Thread?`
-- Add `ConversationsListView` and `ConversationRowView`
-- Implement navigation between list and detail
-- Add split view for iPad/Mac
+Add this at the bottom of **DesignTokens.swift**:
 
-**Estimated effort:** 2-3 days
-
-**Key considerations:**
-- Title generation: Use first user message or "New conversation"
-- Performance: Lazy loading for large conversation lists
-- Persistence: All threads saved in SwiftData
-- Context management: Pass thread between views efficiently
-
----
-
-## 🖼️ UI/UX Specs - V1 Minimal
-
-### Screen 1: Onboarding (First launch only)
-
-```
-┌─────────────────────────┐
-│                         │
-│      🌙 (Moon icon)     │
-│                         │
-│      [App Name]         │
-│   Chat with local AI    │
-│                         │
-│  ┌───────────────────┐  │
-│  │   Downloading...  │  │
-│  │  ████████░░░░ 65% │  │
-│  │   Llama 3.2 1B    │  │
-│  └───────────────────┘  │
-│                         │
-│  Keep screen open and   │
-│  wait for installation  │
-│                         │
-└─────────────────────────┘
-```
-
-**Behavior:**
-- Check if model is downloaded
-- If not: show progress bar (700 MB download)
-- Once complete: transition to chat
-
-**Design:**
-- Soft gradient background (off-white → light beige)
-- Progress card: glassmorphism effect
-- Moon icon: subtle animation (optional)
-
----
-
-### Screen 2: Chat (Main screen)
-
-```
-┌─────────────────────────┐
-│       Chat          ⚙   │  ← Nav bar with settings button
-├─────────────────────────┤
-│                         │
-│  User: Hello!           │
-│  [timestamp]            │
-│                         │
-│  Assistant: Hi there!   │
-│  How can I help?        │
-│  [timestamp]            │
-│                         │
-│  User: Tell me...       │
-│  [timestamp]            │
-│                         │
-│  Assistant: [typing...] │
-│                         │
-│                         │
-├─────────────────────────┤
-│ ┌─────────────────────┐ │
-│ │  Type message...    │ │  ← Input field
-│ └─────────────────────┘ │
-│                      [↑]│  ← Send button
-└─────────────────────────┘
-```
-
-**Behavior:**
-- Auto-scroll to bottom when new message
-- Send button enabled only if text non-empty
-- Streaming: words appear progressively (every 4 tokens)
-- ⚙ button: opens Settings sheet
-
-**Design - Liquid glass:**
-- User messages: right-aligned, blue-tinted glass bubble
-- Assistant messages: left-aligned, white/gray glass bubble
-- Bubbles: 18px border-radius, soft shadow
-- Input field: glassmorphism, subtle border
-
-**Special states:**
-- Empty chat: "Start a conversation..." placeholder
-- Generation error: red error message + "Retry" button
-
----
-
-### Screen 3: Settings
-
-```
-┌─────────────────────────┐
-│  ← Settings             │
-├─────────────────────────┤
-│                         │
-│  System Prompt          │
-│  ┌───────────────────┐  │
-│  │ you are a helpful │  │
-│  │ assistant         │  │
-│  │                   │  │
-│  └───────────────────┘  │
-│  [Reset to default]     │
-│                         │
-│ ─────────────────────── │
-│                         │
-│  Model Info             │
-│  Llama 3.2 1B (700 MB)  │
-│  Status: Downloaded     │
-│                         │
-└─────────────────────────┘
-```
-
-**Behavior:**
-- Multi-line TextEditor for system prompt
-- "Reset to default" button
-- Changes apply to new messages immediately
-- Model info: read-only
-
-**Design:**
-- Standard SwiftUI Form
-- TextEditor with glass background
-
----
-
-## 🏗️ Architecture
-
-### File Structure (Simplified for V1)
-
-```
-LocalLLMChat/
-├── LocalLLMChatApp.swift         # Entry point
-├── Models/
-│   ├── Message.swift              # SwiftData model
-│   ├── LLMEvaluator.swift         # MLX inference logic
-│   └── AppManager.swift           # Global state (system prompt, etc.)
-├── Views/
-│   ├── OnboardingView.swift       # First launch + download
-│   ├── ChatView.swift             # Main chat screen
-│   ├── MessageBubble.swift        # Message component
-│   ├── ChatInputField.swift       # Input component
-│   └── SettingsView.swift         # Settings sheet
-├── ViewModels/
-│   └── ChatViewModel.swift        # Chat logic (observable)
-└── Tests/
-    ├── MessageTests.swift
-    ├── ChatViewModelTests.swift
-    └── LLMEvaluatorTests.swift
-```
-
----
-
-### Data Models (SwiftData)
-
-**Message** (V1 - No Thread model needed)
 ```swift
+// MARK: - Preview
+#Preview("Design Tokens") {
+    VStack(spacing: 20) {
+        // Colors
+        HStack(spacing: 10) {
+            Circle().fill(.accentPrimary).frame(width: 50, height: 50)
+            Circle().fill(.neutralGray200).frame(width: 50, height: 50)
+            Circle().fill(.textSecondary).frame(width: 50, height: 50)
+        }
+
+        // Fonts
+        Text("lil claudio")
+            .font(.splashTitle)
+
+        Text("chat")
+            .font(.headerTitle)
+
+        Text("message")
+            .font(.inputText)
+            .foregroundStyle(.textSecondary)
+
+        // Icons
+        HStack(spacing: 20) {
+            Image(systemName: SFSymbols.sendArrow)
+                .font(.system(size: 24))
+            Image(systemName: SFSymbols.stopSquare)
+                .font(.system(size: 24))
+            Image(systemName: SFSymbols.menuIcon)
+                .font(.system(size: 24))
+        }
+
+        Text(SFSymbols.pagerEmoji)
+            .font(.system(size: 72))
+    }
+    .padding()
+}
+```
+
+**✅ Validation Checkpoints:**
+
+1. Press `⌘B` to build → should succeed ✅
+2. Open **DesignTokens.swift** in editor
+3. Click the **"Play" button** next to `#Preview("Design Tokens")` (or press `⌥⌘↵`)
+4. Preview panel should appear on the right showing:
+   - 3 colored circles (blue, gray, gray)
+   - Text in different fonts
+   - Icons
+   - 📟 emoji ✅
+
+**How to see the preview:**
+1. Make sure you're viewing **DesignTokens.swift**
+2. Look at the right panel (if hidden: Editor > Canvas in menu bar)
+3. Click **"Resume"** if preview is paused
+
+**💾 Commit:** `feat: add design tokens from Figma specs`
+
+**🎓 Beginner Tip:** SwiftUI Previews let you see your UI instantly without running the whole app. It's super useful for designing components!
+
+---
+
+### **Phase 2: Core Models & Logic (TDD) (Steps 3-5)**
+
+---
+
+#### **Step 3: Message Model + Tests**
+**Time:** 30-40 minutes
+**Goal:** Create the data model for chat messages using Test-Driven Development
+
+**📚 What you'll learn:**
+- SwiftData basics (@Model macro)
+- Writing tests with Swift Testing framework
+- Test-Driven Development (RED → GREEN → REFACTOR)
+- CloudKit-compatible SwiftData models
+
+**🎯 What is TDD?**
+
+TDD means: **Test First, Code Second**
+
+1. **RED**: Write a test that fails (because code doesn't exist yet)
+2. **GREEN**: Write minimal code to make test pass
+3. **REFACTOR**: Improve code without breaking test
+
+**Why?** It ensures your code actually works and prevents bugs!
+
+**🎯 Tasks:**
+
+**3A. RED - Write Failing Tests**
+
+1. In Xcode's left sidebar, find the **Tests** folder
+2. Right-click > **New File...**
+3. Choose **Unit Test Case Class**
+4. Name it **MessageTests.swift**
+5. **Delete** all the template code
+6. Replace with this:
+
+```swift
+import Testing
+import SwiftData
+@testable import lil_Claudio
+
+@Suite("Message Model Tests")
+struct MessageTests {
+
+    @Test("Message created with correct properties")
+    func testMessageCreation() {
+        let message = Message(role: .user, content: "Hello")
+
+        #expect(message.content == "Hello")
+        #expect(message.role == .user)
+        #expect(message.timestamp <= Date())
+    }
+
+    @Test("Message roles are distinct")
+    func testMessageRoles() {
+        let userMsg = Message(role: .user, content: "Hi")
+        let assistantMsg = Message(role: .assistant, content: "Hello")
+
+        #expect(userMsg.role == .user)
+        #expect(assistantMsg.role == .assistant)
+        #expect(userMsg.role != assistantMsg.role)
+    }
+}
+```
+
+7. Press `⌘B` to build → **IT WILL FAIL** ❌ (this is expected!)
+   - Error: "Cannot find 'Message' in scope"
+   - **This is good!** We wrote the test first.
+
+**How to run tests:**
+1. Press `⌘U` (runs all tests)
+2. Or click the ◇ diamond icon next to `@Suite` to run just these tests
+3. Tests will fail with red X ❌
+
+**3B. GREEN - Minimal Implementation**
+
+Now let's make the tests pass:
+
+1. Right-click on **Features/Chat** folder
+2. **New Group** named **Models**
+3. Right-click on **Models** folder > **New File...**
+4. Choose **Swift File**
+5. Name it **Message.swift**
+6. Replace code with:
+
+```swift
+import SwiftData
+import Foundation
+
+/// Représente un message dans le chat (utilisateur ou assistant)
 @Model
 class Message {
-    @Attribute(.unique) var id: UUID
-    var role: Role // .user or .assistant
-    var content: String
-    var timestamp: Date
-    
+    var id: UUID = UUID()
+    var role: Role = .user
+    var content: String = ""
+    var timestamp: Date = Date()
+
     init(role: Role, content: String) {
         self.id = UUID()
         self.role = role
@@ -261,560 +465,520 @@ class Message {
     }
 }
 
+/// Rôle de l'expéditeur du message
 enum Role: String, Codable {
-    case user
-    case assistant
+    case user       // L'utilisateur
+    case assistant  // Le modèle LLM
 }
 ```
 
-**AppManager** (Global settings)
+7. Press `⌘B` to build → should succeed ✅
+8. Press `⌘U` to run tests → **TESTS PASS** ✅✅
+
+You'll see green checkmarks ✓ next to each test!
+
+**🎓 Understanding SwiftData:**
+
 ```swift
-@Observable
-class AppManager {
-    @AppStorage("systemPrompt") var systemPrompt = "you are a helpful assistant"
-    @AppStorage("isModelDownloaded") var isModelDownloaded = false
-    
-    var isDownloading = false
-    var downloadProgress: Double = 0.0
+@Model  // ← This tells Swift: "This is a database model"
+class Message {
+    var id: UUID = UUID()  // ← Must have default value (no .unique for CloudKit)
+    // ...
 }
 ```
 
----
+**Why no `@Attribute(.unique)`?**
+- It breaks CloudKit sync
+- Instead, use default values (`= UUID()`)
 
-## 📅 Detailed Development Plan
+**3C. REFACTOR - Improve (Optional)**
 
-### PHASE 1: Project Setup & Dependencies
-**Estimated time:** 1-2 hours  
-**Goal:** Working Xcode project with MLX integrated
+Code is already clean! No refactoring needed.
 
-#### Step 1.1: Create Xcode Project
-**Claude Code should:**
-1. Create new iOS App project
-2. Target: iOS 17.0+
-3. Interface: SwiftUI
-4. Language: Swift
+**✅ Validation Checkpoints:**
 
-**Expected input from you:**
-- App name (e.g., "LocalLLMChat")
-- Bundle ID (e.g., "com.yourname.localllmchat")
+1. Press `⌘U` → all tests pass ✅
+2. No build warnings ✅
+3. Message model compiles ✅
 
-**Checkpoint:**
-✅ Project compiles without errors  
-✅ Can run on simulator and see "Hello, World!" default view
+**💾 Commits:**
+1. `test: add Message model tests (RED)`
+2. `feat: implement Message model with SwiftData (GREEN)`
+
+**🎓 Beginner Tip:** The diamond icons (◇) next to tests let you run individual tests. Click them to see pass/fail status!
 
 ---
 
-#### Step 1.2: Add MLX Swift Packages
-**Claude Code should:**
-1. File → Add Package Dependencies
-2. Add: `https://github.com/ml-explore/mlx-swift`
-3. Add: `https://github.com/ml-explore/mlx-swift-examples` (select MLXLLM, MLXLMCommon, MLXRandom)
+#### **Step 4: LLMEvaluator + Tests**
+**Time:** 45-60 minutes
+**Goal:** Handle model loading and text generation with MLX
 
-**Expected input from you:**
-- Confirmation that packages resolve successfully
+**📚 What you'll learn:**
+- MLX Swift integration
+- Async/await for background operations
+- @Observable for state management (modern SwiftUI)
+- Streaming text generation
+- Memory management for ML models
 
-**Checkpoint:**
-✅ `import MLX` and `import MLXLLM` compile without errors  
-✅ No package resolution errors
+**🎯 What is LLMEvaluator?**
 
-**Common bugs to avoid:**
-- ⚠️ If package resolution hangs: File → Packages → Reset Package Caches
-- ⚠️ Ensure "Add to target" is checked for main app target
+It's the "brain" of the app - the class that:
+- Downloads the Llama model (~700 MB)
+- Loads it into memory
+- Generates text responses
+- Streams responses word-by-word
 
----
+**🎯 Tasks:**
 
-#### Step 1.3: Configure SwiftData
-**Claude Code should:**
-1. Create `Message.swift` with SwiftData @Model
-2. Configure `.modelContainer(for: Message.self)` in App struct
+**4A. RED - Write Failing Tests**
 
-**Test to write FIRST (TDD):**
+1. In **Tests** folder, create **LLMEvaluatorTests.swift**
+2. Add this code:
+
 ```swift
-@Test("Message creation")
-func testMessageCreation() {
-    let message = Message(role: .user, content: "Test")
-    #expect(message.role == .user)
-    #expect(message.content == "Test")
-    #expect(!message.id.uuidString.isEmpty)
-}
-```
+import Testing
+@testable import lil_Claudio
 
-**Expected input from you:**
-- None (should be automatic)
+@Suite("LLMEvaluator Tests")
+struct LLMEvaluatorTests {
 
-**Checkpoint:**
-✅ Test passes  
-✅ No SwiftData configuration errors
+    @Test("Initial state is correct")
+    @MainActor
+    func testInitialState() {
+        let evaluator = LLMEvaluator()
 
-**Common bugs to avoid:**
-- ⚠️ `@Attribute(.unique)` must be on `id` or you'll get duplicate messages
-- ⚠️ Don't forget to add `.modelContainer()` in App struct
+        #expect(evaluator.progress == 0.0)
+        #expect(evaluator.running == false)
+        #expect(evaluator.output.isEmpty)
+    }
 
----
+    @Test("Running state toggles correctly")
+    @MainActor
+    func testRunningStateToggle() {
+        let evaluator = LLMEvaluator()
 
-#### Step 1.4: Create AppManager
-**Claude Code should:**
-1. Create `AppManager.swift` with @Observable
-2. Add @AppStorage properties for systemPrompt and isModelDownloaded
+        evaluator.running = true
+        #expect(evaluator.running == true)
 
-**Test to write FIRST:**
-```swift
-@Test("AppManager defaults")
-func testAppManagerDefaults() {
-    let manager = AppManager()
-    #expect(manager.systemPrompt == "you are a helpful assistant")
-    #expect(manager.isModelDownloaded == false)
-}
-```
-
-**Expected input from you:**
-- None
-
-**Checkpoint:**
-✅ Test passes  
-✅ AppManager compiles
-
-**Common bugs to avoid:**
-- ⚠️ @Observable requires `import Observation`
-- ⚠️ Don't mix @Observable with ObservableObject (old pattern)
-
----
-
-### PHASE 2: Onboarding & Model Download
-**Estimated time:** 2-3 hours  
-**Goal:** Download Llama 3.2 1B on first launch
-
-#### Step 2.1: Create OnboardingView Shell
-**Claude Code should:**
-1. Create `OnboardingView.swift`
-2. Basic layout: moon icon, app name, download card placeholder
-3. Show if `isModelDownloaded == false`
-
-**No tests yet** (pure UI)
-
-**Expected input from you:**
-- App name to display
-
-**Checkpoint:**
-✅ View appears on first launch  
-✅ Liquid glass card renders correctly
-
----
-
-#### Step 2.2: Integrate LLMModelFactory for Download
-**Claude Code should:**
-1. Create `LLMEvaluator.swift` with `load()` function
-2. Use `LLMModelFactory.shared.loadContainer()` with progress callback
-3. Update `AppManager.downloadProgress` in callback
-
-**Test to write FIRST:**
-```swift
-@Test("Download progress updates")
-@MainActor
-func testDownloadProgress() async {
-    let manager = AppManager()
-    manager.isDownloading = true
-    
-    // Simulate progress
-    manager.downloadProgress = 0.5
-    
-    #expect(manager.downloadProgress == 0.5)
-}
-```
-
-**Expected input from you:**
-- None (auto-downloads from Hugging Face)
-
-**Checkpoint:**
-✅ Progress bar updates from 0% to 100%  
-✅ No network errors  
-✅ Model file saved in app's cache directory
-
-**Common bugs to avoid:**
-- ⚠️ MLX downloads can fail on slow networks → add retry logic
-- ⚠️ Progress callback must run on @MainActor
-- ⚠️ Check available disk space BEFORE starting download (~1 GB needed)
-- ⚠️ `MLX.GPU.set(cacheLimit:)` must be set before loading model
-
----
-
-#### Step 2.3: Handle Download Completion
-**Claude Code should:**
-1. On completion: set `isModelDownloaded = true`
-2. Transition from OnboardingView to ChatView
-3. Handle errors: show alert with "Retry" button
-
-**Test to write FIRST:**
-```swift
-@Test("Model loaded state persists")
-func testModelLoadedState() {
-    let manager = AppManager()
-    manager.isModelDownloaded = true
-    
-    #expect(manager.isModelDownloaded == true)
-}
-```
-
-**Expected input from you:**
-- Wait for full download (~700 MB, 5-10 min on good Wi-Fi)
-
-**Checkpoint:**
-✅ After download, app shows ChatView on next launch  
-✅ No repeated downloads
-
-**Common bugs to avoid:**
-- ⚠️ Verify `isModelDownloaded` persists across app restarts (use @AppStorage correctly)
-- ⚠️ Don't transition to ChatView before model is fully loaded in memory
-
----
-
-### PHASE 3: Core Chat Functionality
-**Estimated time:** 3-4 hours  
-**Goal:** Send message + receive streaming response
-
-#### Step 3.1: Create ChatView Layout
-**Claude Code should:**
-1. Create `ChatView.swift` with ScrollView + LazyVStack
-2. List messages with ForEach
-3. Auto-scroll to bottom when new message
-
-**No tests yet** (pure UI)
-
-**Expected input from you:**
-- None
-
-**Checkpoint:**
-✅ Empty chat shows "Start a conversation..."  
-✅ ScrollView scrolls smoothly
-
----
-
-#### Step 3.2: Create MessageBubble Component
-**Claude Code should:**
-1. Create `MessageBubble.swift`
-2. Display message content, timestamp, role-based styling
-3. Apply liquid glass styling (RoundedRectangle + .ultraThinMaterial)
-
-**Preview to create:**
-```swift
-#Preview {
-    VStack {
-        MessageBubble(message: Message(role: .user, content: "Hello!"))
-        MessageBubble(message: Message(role: .assistant, content: "Hi!"))
+        evaluator.cancel()
+        #expect(evaluator.running == false)
     }
 }
 ```
 
-**Expected input from you:**
-- Feedback on glass styling (too much blur? colors?)
+3. Press `⌘U` → **FAIL** ❌ (expected - no LLMEvaluator yet!)
 
-**Checkpoint:**
-✅ Bubbles render correctly in preview  
-✅ User bubbles align right, assistant bubbles align left
+**4B. GREEN - Implementation**
 
-**Common bugs to avoid:**
-- ⚠️ `.ultraThinMaterial` requires iOS 15+, but you're on 17+ so OK
-- ⚠️ Don't set fixed width on bubbles → use `frame(maxWidth: 280)`
+1. Create **Core/LLM/LLMEvaluator.swift**
+2. Add this code:
 
----
-
-#### Step 3.3: Create ChatInputField Component
-**Claude Code should:**
-1. Create `ChatInputField.swift`
-2. TextField + Send button (SF Symbol: arrow.up.circle.fill)
-3. Disable send button if text is empty
-
-**Test to write FIRST:**
 ```swift
-@Test("Send button disabled when text empty")
-func testSendButtonDisabled() {
-    let text = ""
-    let isEnabled = !text.isEmpty
-    #expect(isEnabled == false)
-}
-```
+import MLX
+import MLXLLM
+import MLXLMCommon
+import MLXRandom
+import Observation
 
-**Expected input from you:**
-- None
-
-**Checkpoint:**
-✅ Typing in field enables send button  
-✅ Pressing send calls callback
-
----
-
-#### Step 3.4: Implement ChatViewModel
-**Claude Code should:**
-1. Create `ChatViewModel.swift` with @Observable
-2. `sendMessage()` function:
-   - Add user message to SwiftData
-   - Call `LLMEvaluator.generate()`
-   - Add assistant response to SwiftData
-3. Observe `LLMEvaluator.output` for streaming updates
-
-**Test to write FIRST:**
-```swift
-@Test("Send message adds to model context")
+/// Gère le chargement et l'inférence du modèle LLM (Llama 3.2 1B)
+@Observable
 @MainActor
-func testSendMessage() async throws {
-    let config = ModelConfiguration(inMemory: true)
-    let container = try ModelContainer(for: Message.self, configurations: config)
-    let viewModel = ChatViewModel(modelContext: container.mainContext)
-    
-    await viewModel.sendMessage("Test")
-    
-    let messages = try container.mainContext.fetch(FetchDescriptor<Message>())
-    #expect(messages.count == 1)
-    #expect(messages.first?.content == "Test")
+class LLMEvaluator {
+    var running = false
+    var output = ""
+    var progress = 0.0
+    var error: String?
+
+    private var modelContainer: ModelContainer?
+
+    let maxTokens = 2048
+    let generateParameters = GenerateParameters(temperature: 0.7)
+    let displayEveryNTokens = 4  // Rafraîchir l'affichage tous les 4 tokens
+
+    /// Charge le modèle Llama 3.2 1B depuis Hugging Face
+    func load() async throws {
+        guard modelContainer == nil else { return }
+
+        // CRITIQUE: Définir la limite du cache GPU AVANT de charger le modèle
+        MLX.GPU.set(cacheLimit: 20 * 1024 * 1024)
+
+        let config = ModelConfiguration(
+            id: "mlx-community/Llama-3.2-1B-Instruct-4bit"
+        )
+
+        modelContainer = try await LLMModelFactory.shared.loadContainer(
+            configuration: config
+        ) { [weak self] progress in
+            Task { @MainActor in
+                self?.progress = progress.fractionCompleted
+            }
+        }
+    }
+
+    /// Génère une réponse en streaming
+    func generate(messages: [Message], systemPrompt: String) async -> String {
+        guard !running, let container = modelContainer else {
+            return ""
+        }
+
+        running = true
+        output = ""
+        error = nil
+
+        // Construire l'historique des messages
+        var promptHistory: [[String: String]] = [
+            ["role": "system", "content": systemPrompt]
+        ]
+
+        for message in messages {
+            promptHistory.append([
+                "role": message.role.rawValue,
+                "content": message.content
+            ])
+        }
+
+        do {
+            // Graine aléatoire pour varier les réponses
+            MLXRandom.seed(UInt64(Date.timeIntervalSinceReferenceDate * 1000))
+
+            let result = try await container.perform { context in
+                let input = try await context.processor.prepare(
+                    input: .init(messages: promptHistory)
+                )
+
+                return try MLXLMCommon.generate(
+                    input: input,
+                    parameters: generateParameters,
+                    context: context
+                ) { tokens in
+                    // CRITIQUE: Vérifier que tokens n'est pas vide avant de décoder!
+                    guard tokens.count > 0 else { return .more }
+
+                    // Streaming: mise à jour tous les N tokens
+                    if tokens.count % displayEveryNTokens == 0 {
+                        let text = context.tokenizer.decode(tokens: tokens)
+                        Task { @MainActor in
+                            self.output = text
+                        }
+                    }
+
+                    // Condition d'arrêt
+                    if tokens.count >= maxTokens {
+                        return .stop
+                    } else {
+                        return .more
+                    }
+                }
+            }
+
+            output = result.output
+
+        } catch {
+            self.error = error.localizedDescription
+            output = "Error: \(error.localizedDescription)"
+        }
+
+        running = false
+        return output
+    }
+
+    /// Annule la génération en cours
+    func cancel() {
+        running = false
+    }
 }
 ```
 
-**Expected input from you:**
-- Test first message: "Hello, who are you?"
+3. Press `⌘B` to build → should succeed ✅
+4. Press `⌘U` to run tests → **PASS** ✅
 
-**Checkpoint:**
-✅ User message appears immediately  
-✅ Assistant response streams in word-by-word  
-✅ Messages persist after app restart
+**🎓 Understanding @Observable:**
 
-**Common bugs to avoid:**
-- ⚠️ `LLMEvaluator.generate()` MUST be called with `await` on background task
-- ⚠️ UI updates (adding messages) MUST be on @MainActor
-- ⚠️ Don't forget to save `modelContext` after adding messages
-- ⚠️ Streaming: bind to `LLMEvaluator.output` with `.onChange()` modifier
+```swift
+@Observable  // ← Modern way to track state changes (iOS 17+)
+@MainActor   // ← All code runs on main thread (safe for UI updates)
+class LLMEvaluator {
+    var running = false  // ← When this changes, SwiftUI auto-updates UI!
+}
+```
+
+**Old way (don't use):**
+```swift
+class LLMEvaluator: ObservableObject {  // ❌ Deprecated!
+    @Published var running = false       // ❌ Old API
+}
+```
+
+**How streaming works:**
+1. Model generates tokens (pieces of words)
+2. Every 4 tokens, we decode them into text
+3. Update `output` property
+4. SwiftUI sees change and re-renders UI
+5. User sees text appear word-by-word!
+
+**✅ Validation Checkpoints:**
+
+1. Tests pass (⌘U) ✅
+2. No build errors ✅
+3. No SwiftLint warnings ✅
+
+**💾 Commits:**
+1. `test: add LLMEvaluator tests (RED)`
+2. `feat: implement LLMEvaluator with streaming (GREEN)`
+
+**🎓 Beginner Tip:** The `@MainActor` annotation is super important! It prevents crashes when updating UI from background threads.
 
 ---
 
-#### Step 3.5: Integrate LLMEvaluator Generation
-**Claude Code should:**
-1. In `LLMEvaluator.swift`, implement `generate()` function
-2. Build prompt history: [system prompt, ...messages]
-3. Call `MLXLMCommon.generate()` with streaming callback
-4. Update `output` property every 4 tokens
+#### **Step 5: ChatViewModel + Tests**
+**Time:** 45-60 minutes
+**Goal:** Orchestrate chat logic (messages + LLM)
 
-**Test to write FIRST:**
+**📚 What you'll learn:**
+- ViewModel pattern in SwiftUI
+- Combining SwiftData with @Observable
+- @AppStorage for simple persistence
+- Async state management
+
+**🎯 What is ChatViewModel?**
+
+It's the "conductor" of the chat screen - it:
+- Manages the list of messages
+- Handles sending new messages
+- Calls LLMEvaluator to generate responses
+- Saves messages to SwiftData
+
+Think of it as the "bridge" between the UI and the model.
+
+**🎯 Tasks:**
+
+**5A. RED - Write Tests**
+
+1. Create **Tests/ChatViewModelTests.swift**
+2. Add this code:
+
 ```swift
-@Test("Generation produces non-empty output")
+import Testing
+import SwiftData
+@testable import lil_Claudio
+
+@Suite("ChatViewModel Tests")
+struct ChatViewModelTests {
+
+    @Test("Send message adds user message")
+    @MainActor
+    func testSendMessage() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: Message.self,
+            configurations: config
+        )
+
+        let viewModel = ChatViewModel(modelContext: container.mainContext)
+        viewModel.inputText = "Hello"
+
+        await viewModel.sendMessage()
+
+        #expect(viewModel.messages.count >= 1)
+        #expect(viewModel.messages.first?.content == "Hello")
+        #expect(viewModel.inputText.isEmpty)
+    }
+
+    @Test("Empty message not sent")
+    @MainActor
+    func testEmptyMessagePrevention() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: Message.self, configurations: config)
+
+        let viewModel = ChatViewModel(modelContext: container.mainContext)
+        viewModel.inputText = ""
+
+        await viewModel.sendMessage()
+
+        #expect(viewModel.messages.isEmpty)
+    }
+
+    @Test("Clear chat removes all messages")
+    @MainActor
+    func testClearChat() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: Message.self, configurations: config)
+
+        let viewModel = ChatViewModel(modelContext: container.mainContext)
+
+        // Ajouter un message de test
+        let msg1 = Message(role: .user, content: "Test 1")
+        container.mainContext.insert(msg1)
+        try container.mainContext.save()
+
+        viewModel.loadMessages()
+        #expect(viewModel.messages.count == 1)
+
+        viewModel.clearChat()
+        #expect(viewModel.messages.isEmpty)
+    }
+}
+```
+
+3. Press `⌘U` → **FAIL** ❌ (no ChatViewModel yet)
+
+**5B. GREEN - Implementation**
+
+1. Create **Features/Chat/ViewModels/ChatViewModel.swift**
+2. Add this code:
+
+```swift
+import SwiftUI
+import SwiftData
+import Observation
+
+/// Gère la logique du chat (messages, envoi, réception)
+@Observable
 @MainActor
-func testGeneration() async {
-    let evaluator = LLMEvaluator()
-    // Note: requires loaded model, so skip in unit tests
-    // or mock the model container
+class ChatViewModel {
+    var inputText = ""
+    var isGenerating = false
+    var messages: [Message] = []
+
+    private let llmEvaluator = LLMEvaluator()
+    private var modelContext: ModelContext
+
+    @AppStorage("systemPrompt")
+    private var systemPrompt = "you are a helpful assistant"
+
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        loadMessages()
+    }
+
+    /// Charge les messages depuis SwiftData
+    func loadMessages() {
+        let descriptor = FetchDescriptor<Message>(
+            sortBy: [SortDescriptor(\.timestamp)]
+        )
+        messages = (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    /// Envoie un message et génère une réponse
+    func sendMessage(_ text: String? = nil) async {
+        let messageText = text ?? inputText
+        guard !messageText.isEmpty else { return }
+
+        // Ajouter le message utilisateur
+        let userMessage = Message(role: .user, content: messageText)
+        modelContext.insert(userMessage)
+        try? modelContext.save()
+
+        inputText = ""
+        loadMessages()
+        isGenerating = true
+
+        // Générer la réponse
+        let response = await llmEvaluator.generate(
+            messages: messages,
+            systemPrompt: systemPrompt
+        )
+
+        // Ajouter le message de l'assistant
+        let assistantMessage = Message(role: .assistant, content: response)
+        modelContext.insert(assistantMessage)
+        try? modelContext.save()
+
+        loadMessages()
+        isGenerating = false
+    }
+
+    /// Annule la génération en cours et garde la réponse partielle
+    func cancelGeneration() {
+        llmEvaluator.cancel()
+
+        // Garder la réponse partielle si elle existe
+        if !llmEvaluator.output.isEmpty {
+            let partialMessage = Message(
+                role: .assistant,
+                content: llmEvaluator.output
+            )
+            modelContext.insert(partialMessage)
+            try? modelContext.save()
+            loadMessages()
+        }
+
+        isGenerating = false
+    }
+
+    /// Supprime tous les messages
+    func clearChat() {
+        for message in messages {
+            modelContext.delete(message)
+        }
+        try? modelContext.save()
+        loadMessages()
+    }
 }
 ```
 
-**Expected input from you:**
-- First test prompt (keep it simple: "Hi")
+3. Press `⌘B` to build → should succeed ✅
+4. Press `⌘U` to run tests → **PASS** ✅
 
-**Checkpoint:**
-✅ Response appears word-by-word  
-✅ Generation completes without errors  
-✅ Token/s metric is reasonable (>5 tokens/s on M1+)
+**🎓 Understanding the Flow:**
 
-**Common bugs to avoid:**
-- ⚠️ `MLXRandom.seed()` must be called before each generation for variety
-- ⚠️ `displayEveryNTokens = 4` → if too low, UI updates lag
-- ⚠️ `maxTokens` limit must be set (2048 is reasonable for V1)
-- ⚠️ CRITICAL: `context.tokenizer.decode()` can crash if tokens array is empty → check `tokens.count > 0`
-- ⚠️ Progress callback MUST use `Task { @MainActor in ... }` to update UI
-
----
-
-### PHASE 4: Settings & System Prompt
-**Estimated time:** 1-2 hours  
-**Goal:** User can customize system prompt
-
-#### Step 4.1: Create SettingsView
-**Claude Code should:**
-1. Create `SettingsView.swift`
-2. Form with TextEditor bound to `@AppStorage("systemPrompt")`
-3. "Reset to default" button
-4. Display model info (name, size, status)
-
-**Test to write FIRST:**
-```swift
-@Test("System prompt updates persist")
-func testSystemPromptUpdate() {
-    let manager = AppManager()
-    manager.systemPrompt = "Custom prompt"
-    #expect(manager.systemPrompt == "Custom prompt")
-}
+```
+User types "Hello" and presses send
+    ↓
+ChatViewModel.sendMessage() called
+    ↓
+1. Create Message(role: .user, content: "Hello")
+2. Save to SwiftData
+3. Clear input field
+4. Call LLMEvaluator.generate()
+    ↓
+LLMEvaluator generates response
+    ↓
+5. Create Message(role: .assistant, content: "Hi there!")
+6. Save to SwiftData
+7. Reload messages
+    ↓
+UI updates automatically (thanks to @Observable!)
 ```
 
-**Expected input from you:**
-- Test custom prompt: "You are a pirate assistant. Speak like a pirate."
+**✅ Validation Checkpoints:**
 
-**Checkpoint:**
-✅ Changes to prompt persist across app restarts  
-✅ Reset button works  
-✅ New messages use updated prompt
+1. All tests pass (⌘U) ✅
+2. No build errors ✅
+3. SwiftLint clean ✅
 
-**Common bugs to avoid:**
-- ⚠️ @AppStorage doesn't support complex types → keep it as String
-- ⚠️ Don't apply prompt retroactively to old messages → only new ones
+**💾 Commits:**
+1. `test: add ChatViewModel tests (RED)`
+2. `feat: implement ChatViewModel (GREEN)`
 
----
-
-#### Step 4.2: Apply System Prompt to Generation
-**Claude Code should:**
-1. In `LLMEvaluator.generate()`, prepend system prompt to history
-2. Format: `[{"role": "system", "content": systemPrompt}, ...]`
-
-**Test to write FIRST:**
-```swift
-@Test("System prompt included in history")
-func testSystemPromptInHistory() {
-    let systemPrompt = "You are helpful"
-    let history = [["role": "system", "content": systemPrompt]]
-    #expect(history.first?["role"] == "system")
-}
-```
-
-**Expected input from you:**
-- Test with pirate prompt and verify response tone
-
-**Checkpoint:**
-✅ Assistant responds according to custom prompt  
-✅ Changing prompt mid-conversation works
+**🎓 Beginner Tip:** The `isStoredInMemoryOnly: true` in tests means the data disappears after the test. This keeps tests isolated!
 
 ---
 
-### PHASE 5: Polish & Testing
-**Estimated time:** 2-3 hours  
-**Goal:** Stable, bug-free V1
+### **Phase 3: UI Screens (Steps 6-8)**
 
-#### Step 5.1: Add Error Handling
-**Claude Code should:**
-1. Wrap `generate()` in do-catch
-2. Display error message in chat if generation fails
-3. Add "Retry" button
+_(Continued in next message due to length...)_
 
-**Test to write FIRST:**
-```swift
-@Test("Error state handled gracefully")
-@MainActor
-func testErrorHandling() {
-    let viewModel = ChatViewModel(modelContext: mockContext)
-    viewModel.error = "Test error"
-    #expect(viewModel.error != nil)
-}
-```
+**Current Status:** We've completed the foundation! ✅
+- ✅ Models (Message, LLMEvaluator, ChatViewModel)
+- ✅ Tests (all passing!)
+- ⏳ Next: Build the actual screens users will see
 
-**Expected input from you:**
-- Simulate error (e.g., airplane mode during generation)
-
-**Checkpoint:**
-✅ Error message appears in red  
-✅ Retry button works
-
-**Common bugs to avoid:**
-- ⚠️ Errors must be shown to user (not just logged)
-- ⚠️ Clear error state after retry
+**🎓 Take a Break!**
+You've done the hardest part (the "brain" of the app). The UI will be more visual and fun! When ready, we'll tackle:
+- Step 6: Splash screen
+- Step 7: Download screen
+- Step 8: Chat screen
 
 ---
 
-#### Step 5.2: Memory & Performance
-**Claude Code should:**
-1. Add low memory warning handler → clear model from memory
-2. Optimize ScrollView with LazyVStack
-3. Test on real device (not just simulator)
+## 📚 Additional Resources
 
-**Expected input from you:**
-- Test on physical iPhone/iPad
-
-**Checkpoint:**
-✅ No memory crashes  
-✅ Smooth scrolling even with 50+ messages  
-✅ Generation starts within 1 second
-
-**Common bugs to avoid:**
-- ⚠️ Model takes ~1-2 GB RAM → test on devices with <4 GB RAM
-- ⚠️ LazyVStack MUST be used for message list (not VStack)
-- ⚠️ `modelContainer = nil` on low memory, reload on next use
+- [CLAUDE.md](./CLAUDE.md) - Detailed technical guidelines
+- [MLX Swift Examples](https://github.com/ml-explore/mlx-swift-examples)
+- [SwiftData Docs](https://developer.apple.com/documentation/swiftdata)
+- [Swift Testing](https://developer.apple.com/documentation/testing)
 
 ---
 
-#### Step 5.3: Final Polish
-**Claude Code should:**
-1. Add haptic feedback on send button tap
-2. Improve empty state messaging
-3. Add loading spinner during model load
-4. Test dark mode
-
-**No tests** (pure polish)
-
-**Expected input from you:**
-- Visual feedback on polish items
-
-**Checkpoint:**
-✅ App feels responsive  
-✅ Dark mode looks good  
-✅ No visual glitches
-
----
-
-## ✅ V1 Definition of Done
-
-### Functional
-- [ ] Model downloads successfully on first launch
-- [ ] Can send message and receive streaming response
-- [ ] Messages persist across app restarts
-- [ ] System prompt can be customized
-- [ ] Errors are handled gracefully
-
-### Technical
-- [ ] All unit tests pass
-- [ ] No memory leaks (test with Instruments)
-- [ ] No crashes on 10 test sessions
-- [ ] Builds for iOS, iPadOS, macOS
-
-### UX
-- [ ] Liquid glass design applied consistently
-- [ ] Animations are smooth (60 fps)
-- [ ] Text is readable in light + dark mode
-
----
-
-## 🚨 Common Pitfalls to Avoid
-
-### Swift/MLX Specific
-1. **@MainActor violations:** All UI updates MUST be on main thread
-2. **SwiftData context:** Only one context per view, pass from parent
-3. **MLX model loading:** Can take 10-30s first time → show progress
-4. **Token decoding:** Can fail with empty array → always check `tokens.count > 0`
-5. **Memory pressure:** 700 MB model + system = ~1.5 GB total
-
-### Architecture
-1. **Retain cycles:** Use `[weak self]` in Task closures
-2. **State duplication:** Don't store same data in ViewModel AND SwiftData
-3. **Premature optimization:** Get it working first, optimize later
-
----
-
-## 📱 Testing Strategy
-
-### After Each Step
-1. Run tests: ⌘U in Xcode
-2. Check console for warnings
-3. Test on simulator + real device
-4. Verify in light + dark mode
-
-### Before Calling Step "Done"
-1. All tests pass
-2. No compiler warnings
-3. Feature works as expected
-4. Code is commented (in French for Romain, variable names in English)
-
----
-
-## 🎯 Success Metrics for V1
-
-- **Setup time:** < 30 min to working build
-- **Download time:** < 10 min on good Wi-Fi
-- **First response:** < 5 seconds after sending message
-- **Token rate:** > 5 tokens/second on M1+
-- **Stability:** 0 crashes in 10 test sessions
-
----
-
-Good luck with your vibe coding! 🚀
+**Let's build this step by step! 🚀**
