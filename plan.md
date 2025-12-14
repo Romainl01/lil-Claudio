@@ -97,9 +97,36 @@ Before we start, here are some Xcode shortcuts you'll use frequently:
 
 ---
 
-#### **Step 1: Project Setup & Dependencies**
+#### **✅ Step 1: Project Setup & Dependencies** ✅ COMPLETED
 **Time:** 30-45 minutes
 **Goal:** Create Xcode project + add MLX packages
+
+**🤔 Why are we doing this?**
+
+**Why MLX packages?**
+- **Local AI = Privacy + Speed + Free**: MLX lets the AI run entirely on your iPhone's chip (no internet needed after download)
+- **No API costs**: Unlike ChatGPT API ($$$), this is completely free
+- **Offline-first**: Works on airplane mode, no data usage
+- **Privacy**: Your messages never leave your device
+- **MLX** = Low-level GPU framework (the "engine")
+- **MLXLLM** = High-level LLM tools (loads Llama models)
+- **MLXLMCommon** = Text generation logic (streaming responses)
+
+**Why folder structure (App, Features, Core)?**
+- **App**: Entry point (main file that starts the app)
+- **Features**: Each screen/feature in its own folder (easy to find, easy to delete)
+  - `Splash/`: Splash screen code lives here
+  - `Download/`: Model download screen code
+  - `Chat/`: Chat screen code
+- **Core**: Shared code used everywhere (LLM engine, design system)
+  - `LLM/`: The "brain" (model loading, text generation)
+  - `Design/`: Colors, fonts, spacing (so design is consistent)
+
+**Benefits:**
+- ✅ Easy to navigate (no hunting for files in a giant mess)
+- ✅ Scalable (adding new features = add new folder)
+- ✅ Team-friendly (multiple people can work on different features)
+- ✅ Testable (each feature can have its own tests)
 
 **📚 What you'll learn:**
 - How to create an iOS project targeting iOS 26.0+
@@ -193,6 +220,32 @@ Test your setup:
 #### **Step 2: Design Tokens & System**
 **Time:** 20-30 minutes
 **Goal:** Create reusable design constants from Figma
+
+**🤔 Why are we doing this?**
+
+**Why Design Tokens?**
+Design tokens are like a "design dictionary" - instead of hardcoding colors and sizes everywhere, you define them once and reuse them.
+
+**Without tokens (❌ Bad):**
+```swift
+Text("Hello").foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
+Button(...).background(Color(red: 0.95, green: 0.95, blue: 0.95))
+// What if designer changes this color? You have to find and replace EVERYWHERE! 😱
+```
+
+**With tokens (✅ Good):**
+```swift
+Text("Hello").foregroundStyle(.surfaceLight)
+Button(...).background(.surfaceLight)
+// Change color once in DesignTokens.swift, updates everywhere! 🎉
+```
+
+**Benefits:**
+- ✅ **Consistency**: All buttons/text use the same exact colors
+- ✅ **Easy updates**: Change a color once, whole app updates
+- ✅ **Designer-friendly**: Tokens match Figma exactly (less confusion)
+- ✅ **Dark mode ready**: Later you can swap token values for dark mode
+- ✅ **Less bugs**: No typos like `Color.bleu` instead of `Color.blue`
 
 **📚 What you'll learn:**
 - How to organize design tokens in SwiftUI
