@@ -7,13 +7,22 @@
 
 **CRITICAL: Read this entire file before starting any work.**
 
+**🆕 Updated with [SwiftAgents](https://github.com/twostraws/SwiftAgents) best practices:**
+- iOS 26+ target (modern liquid glass APIs)
+- Modern SwiftUI APIs (foregroundStyle, clipShape, Button with systemImage, etc.)
+- SwiftData CloudKit compatibility (no @Attribute(.unique))
+- Minimal UI testing approach (focus on unit tests)
+- SwiftLint integration for code quality
+- Project organization by features
+
 This file contains:
 1. TDD methodology (mandatory)
-2. Modern SwiftUI patterns (iOS 17+)
-3. MLX integration guide
-4. Design system specifications
-5. Common bugs to avoid
-6. Testing examples
+2. Modern SwiftUI patterns (iOS 26+, Swift 6.2+)
+3. SwiftAgents best practices (modern APIs)
+4. MLX integration guide
+5. Design system specifications
+6. Common bugs to avoid
+7. Testing examples
 
 **At the start of each session:**
 1. Read `plan.md` to understand the current phase
@@ -33,6 +42,11 @@ We're working on Phase X, Step Y. Follow TDD approach.
 ## 📋 Project Context
 
 Building an iOS/macOS chat app with local LLM (Llama 3.2 1B) using SwiftUI, MLX, and SwiftData. Approach is **Test-Driven Development (TDD)** with minimal liquid glass design.
+
+**Target Platform:**
+- **iOS 26.0+** (for modern liquid glass APIs)
+- **Swift 6.2+** (strict concurrency)
+- **No third-party frameworks** (except MLX for LLM inference)
 
 **V1 Scope (Ultra-Minimal):**
 - Single chat thread (no conversation history)
@@ -79,11 +93,11 @@ class Message {
 // 3. REFACTOR - Add features without breaking test
 @Model
 class Message {
-    @Attribute(.unique) var id: UUID
-    var role: Role
-    var content: String
-    var timestamp: Date
-    
+    var id: UUID = UUID()  // Default value (CloudKit-compatible)
+    var role: Role = .user
+    var content: String = ""
+    var timestamp: Date = Date()
+
     init(role: Role, content: String) {
         self.id = UUID()
         self.role = role
@@ -93,13 +107,19 @@ class Message {
 }
 ```
 
-**Types of Tests:**
+**Types of Tests (by priority):**
 
-- **Unit tests**: Business logic (ViewModels, models)
-- **Integration tests**: Component interactions (ChatViewModel + LLMEvaluator)
-- **UI tests**: Critical user flows (create conversation, send message)
+1. **Unit tests** (MOST IMPORTANT): Business logic (ViewModels, models, utilities)
+2. **Integration tests**: Component interactions (ChatViewModel + LLMEvaluator)
+3. **UI tests** (MINIMAL): Only for critical happy path ("can send message and get response")
 
-**Testing Framework:** Swift Testing (iOS 17+, more modern than XCTest)
+**Why minimal UI tests?**
+- UI tests are slow and fragile
+- They break easily with design changes
+- Unit tests provide better coverage with less maintenance
+- Focus testing effort where it matters most
+
+**Testing Framework:** Swift Testing (iOS 26+, more modern than XCTest)
 
 **Example ChatViewModel Test:**
 
@@ -139,23 +159,23 @@ struct ChatViewModelTests {
 
 ---
 
-### 2. Modern SwiftUI Architecture (iOS 17+)
+### 2. Modern SwiftUI Architecture (iOS 26+)
 
-**Use these patterns:**
+**Use these patterns (based on SwiftAgents best practices):**
 
 #### @Observable (instead of ObservableObject)
 
 ```swift
-// ✅ CORRECT (iOS 17+)
+// ✅ CORRECT (iOS 26+, Swift 6.2)
 import Observation
 
 @Observable
-@MainActor
+@MainActor  // ALWAYS mark @Observable classes with @MainActor
 class ChatViewModel {
     var messages: [Message] = []
     var isGenerating = false
     var currentInput = ""
-    
+
     func sendMessage(_ text: String) async {
         // Implementation
     }
@@ -164,26 +184,29 @@ class ChatViewModel {
 // In View
 struct ChatView: View {
     @State private var viewModel = ChatViewModel()
-    
+
     var body: some View {
         // viewModel updates automatically
     }
 }
+
+// ❌ NEVER use ObservableObject - it's deprecated
+// Use @Observable instead
 ```
 
 #### SwiftData (instead of CoreData)
 
 ```swift
-// ✅ CORRECT - SwiftData models
+// ✅ CORRECT - SwiftData models (CloudKit-compatible)
 import SwiftData
 
 @Model
 class Message {
-    @Attribute(.unique) var id: UUID
-    var role: Role
-    var content: String
-    var timestamp: Date
-    
+    var id: UUID = UUID()  // Default value (no .unique for CloudKit compatibility)
+    var role: Role = .user
+    var content: String = ""
+    var timestamp: Date = Date()
+
     init(role: Role, content: String) {
         self.id = UUID()
         self.role = role
@@ -196,6 +219,11 @@ enum Role: String, Codable {
     case user
     case assistant
 }
+
+// 🔑 SwiftData Rules (for CloudKit compatibility):
+// - NEVER use @Attribute(.unique)
+// - ALL properties need default values OR be optional
+// - ALL relationships must be optional
 
 // In App
 @main
@@ -229,10 +257,134 @@ struct ChatView: View {
 // In View
 struct SettingsView: View {
     @AppStorage("systemPrompt") private var systemPrompt = "you are a helpful assistant"
-    
+
     var body: some View {
         TextEditor(text: $systemPrompt)
     }
+}
+```
+
+#### Modern SwiftUI APIs (SwiftAgents Best Practices)
+
+**Styling & Visual:**
+```swift
+// ✅ CORRECT - Modern APIs
+.foregroundStyle(.blue)  // Not .foregroundColor()
+.clipShape(.rect(cornerRadius: 12))  // Not .cornerRadius()
+.bold()  // Not .fontWeight(.bold)
+
+// ❌ AVOID - Deprecated/old APIs
+.foregroundColor(.blue)
+.cornerRadius(12)
+.fontWeight(.bold)
+```
+
+**Navigation:**
+```swift
+// ✅ CORRECT - NavigationStack (iOS 16+)
+NavigationStack {
+    List {
+        NavigationLink("Settings", value: Route.settings)
+    }
+    .navigationDestination(for: Route.self) { route in
+        // Handle navigation
+    }
+}
+
+// ❌ NEVER use NavigationView (deprecated)
+```
+
+**Buttons & Interactions:**
+```swift
+// ✅ CORRECT - Use Button with text + image
+Button("Add Item", systemImage: "plus") {
+    addItem()
+}
+
+// ✅ CORRECT - Button for interactions
+Button("Tap Me") {
+    handleTap()
+}
+
+// ❌ AVOID - onTapGesture (unless you need location/count)
+Text("Tap Me")
+    .onTapGesture { handleTap() }  // Use Button instead!
+```
+
+**Layout:**
+```swift
+// ✅ CORRECT - Modern layout
+.containerRelativeFrame(.horizontal) { length, _ in
+    length * 0.8
+}
+
+// ✅ CORRECT - ScrollView indicators
+ScrollView {
+    // content
+}
+.scrollIndicators(.hidden)
+
+// ❌ AVOID - GeometryReader (unless absolutely necessary)
+// ❌ AVOID - showsIndicators: false (old API)
+```
+
+**String Manipulation:**
+```swift
+// ✅ CORRECT - Modern string methods
+let replaced = text.replacing("hello", with: "world")
+let filtered = items.filter { item in
+    item.localizedStandardContains(searchText)  // User input filtering
+}
+
+// ❌ AVOID - Old methods
+let replaced = text.replacingOccurrences(of: "hello", with: "world")
+let filtered = items.filter { $0.contains(searchText) }
+```
+
+**Number Formatting:**
+```swift
+// ✅ CORRECT - SwiftUI format API
+Text(value, format: .number.precision(.fractionLength(2)))
+
+// ❌ AVOID - C-style formatting
+Text(String(format: "%.2f", value))
+```
+
+**Concurrency:**
+```swift
+// ✅ CORRECT - Modern concurrency
+Task {
+    try await Task.sleep(for: .seconds(1))
+    await updateData()
+}
+
+// ❌ NEVER use DispatchQueue.main.async
+// ❌ NEVER use Task.sleep(nanoseconds:)
+```
+
+**URL & Files:**
+```swift
+// ✅ CORRECT - Modern URL APIs
+let docURL = URL.documentsDirectory
+let fileURL = docURL.appending(path: "data.json")
+
+// ❌ AVOID - FileManager.default.urls(for:in:)
+```
+
+**onChange Modifier:**
+```swift
+// ✅ CORRECT - Two-parameter or zero-parameter
+.onChange(of: value) { oldValue, newValue in
+    // Handle change
+}
+
+.onChange(of: value) {
+    // Handle change (no params)
+}
+
+// ❌ NEVER use single-parameter variant (deprecated)
+.onChange(of: value) { newValue in  // WRONG!
+    // ...
 }
 ```
 
@@ -488,7 +640,7 @@ struct GlassCardModifier: ViewModifier {
 
 struct LiquidButtonModifier: ViewModifier {
     var isEnabled: Bool
-    
+
     func body(content: Content) -> some View {
         content
             .padding(.horizontal, 20)
@@ -497,7 +649,7 @@ struct LiquidButtonModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(isEnabled ? Color.accentBlue : Color.gray.opacity(0.3))
             )
-            .foregroundStyle(.white)
+            .foregroundStyle(.white)  // Modern API (not .foregroundColor)
             .animation(.easeInOut(duration: 0.2), value: isEnabled)
     }
 }
@@ -535,31 +687,31 @@ enum Spacing {
 ```swift
 struct MessageBubble: View {
     let message: Message
-    
+
     var body: some View {
         HStack {
             if message.role == .user {
                 Spacer()
             }
-            
+
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
                 Text(message.content)
                     .font(.chatMessage)
                     .padding(Spacing.md)
                     .background(
                         RoundedRectangle(cornerRadius: 18)
-                            .fill(message.role == .user ? 
-                                  Color.accentBlue.opacity(0.15) : 
+                            .fill(message.role == .user ?
+                                  Color.accentBlue.opacity(0.15) :
                                   Color(.systemGray6))
                     )
-                
+
                 Text(message.timestamp, format: .dateTime.hour().minute())
                     .font(.chatTimestamp)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondary)  // Modern API
                     .padding(.horizontal, Spacing.sm)
             }
             .frame(maxWidth: 280, alignment: message.role == .user ? .trailing : .leading)
-            
+
             if message.role == .assistant {
                 Spacer()
             }
@@ -583,7 +735,7 @@ struct ChatInputField: View {
     @Binding var text: String
     var onSend: () -> Void
     var isGenerating: Bool
-    
+
     var body: some View {
         HStack(spacing: Spacing.sm) {
             TextField("Type a message...", text: $text, axis: .vertical)
@@ -595,12 +747,14 @@ struct ChatInputField: View {
                 )
                 .lineLimit(1...5)
                 .onSubmit(onSend)
-            
-            Button(action: onSend) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(text.isEmpty || isGenerating ? .gray : .blue)
+
+            // Modern Button API: text + systemImage
+            Button("Send", systemImage: "arrow.up.circle.fill") {
+                onSend()
             }
+            .labelStyle(.iconOnly)  // Show only icon
+            .font(.system(size: 32))
+            .foregroundStyle(text.isEmpty || isGenerating ? .gray : .blue)
             .disabled(text.isEmpty || isGenerating)
         }
         .padding(Spacing.md)
@@ -613,7 +767,45 @@ struct ChatInputField: View {
 
 ## 🛠️ iOS Best Practices
 
-### 1. Memory Management
+### 1. Project Organization
+
+**File Structure:**
+- Organize by **features**, not by type
+- One type per file (no massive files with multiple classes)
+- Consistent naming conventions
+
+**Example structure:**
+```
+LocalLLMChat/
+├── App/
+│   └── LocalLLMChatApp.swift
+├── Features/
+│   ├── Chat/
+│   │   ├── Views/
+│   │   │   ├── ChatView.swift
+│   │   │   └── MessageBubble.swift
+│   │   ├── ViewModels/
+│   │   │   └── ChatViewModel.swift
+│   │   └── Models/
+│   │       └── Message.swift
+│   └── Settings/
+│       └── SettingsView.swift
+├── Core/
+│   ├── LLM/
+│   │   └── LLMEvaluator.swift
+│   └── Design/
+│       └── DesignSystem.swift
+└── Tests/
+    ├── ChatViewModelTests.swift
+    └── MessageTests.swift
+```
+
+**Code Style:**
+- Use descriptive names (types, properties, methods, models)
+- Document code with comments where clarity is needed (in French for Romain)
+- NEVER commit secrets (API keys, tokens) to the repository
+
+### 2. Memory Management
 
 ```swift
 // ✅ CORRECT - Use [weak self] in closures
@@ -629,12 +821,12 @@ func applicationDidReceiveMemoryWarning() {
 }
 ```
 
-### 2. Concurrency (async/await)
+### 3. Concurrency (async/await)
 
 ```swift
 // ✅ CORRECT - All UI updates on @MainActor
 @MainActor
-class ChatViewModel: ObservableObject {
+class ChatViewModel {
     func sendMessage() async {
         // Code runs on main thread
     }
@@ -648,7 +840,7 @@ func loadModel() async {
 }
 ```
 
-### 3. Error Handling
+### 4. Error Handling
 
 ```swift
 // ✅ CORRECT - Handle errors with do-catch
@@ -670,16 +862,16 @@ func generate() async {
 }
 ```
 
-### 4. Performance
+### 5. Performance
 
 ```swift
 // ✅ CORRECT - Lazy loading for heavy views
 struct ChatView: View {
     @Query var messages: [Message]
-    
+
     var body: some View {
         ScrollView {
-            LazyVStack { // Lazy for performance
+            LazyVStack { // Lazy for performance (NOT VStack for 100+ items!)
                 ForEach(messages) { message in
                     MessageBubble(message: message)
                 }
@@ -691,7 +883,7 @@ struct ChatView: View {
 // ✅ CORRECT - Limit updates with .onChange
 struct ChatView: View {
     @State private var viewModel = ChatViewModel()
-    
+
     var body: some View {
         ScrollView {
             LazyVStack {
@@ -706,6 +898,9 @@ struct ChatView: View {
         }
     }
 }
+
+// ❌ AVOID - AnyView (type erasure hurts performance)
+// Only use when absolutely necessary
 ```
 
 ---
@@ -911,18 +1106,33 @@ let text = context.tokenizer.decode(tokens: tokens)
 
 ### SwiftData Specific
 
-1. **@Attribute(.unique) required on id**
+1. **NEVER use @Attribute(.unique) for CloudKit compatibility**
    ```swift
-   @Attribute(.unique) var id: UUID // Prevents duplicates
+   // ✅ CORRECT
+   var id: UUID = UUID()  // Default value, no .unique
+
+   // ❌ WRONG
+   @Attribute(.unique) var id: UUID
    ```
 
-2. **Save after inserts/deletes**
+2. **ALL properties need default values OR be optional**
+   ```swift
+   // ✅ CORRECT
+   var content: String = ""
+   var timestamp: Date = Date()
+   var optionalField: String?
+
+   // ❌ WRONG
+   var content: String  // No default!
+   ```
+
+3. **Save after inserts/deletes**
    ```swift
    modelContext.insert(message)
    try? modelContext.save() // Don't forget!
    ```
 
-3. **One ModelContext per view hierarchy**
+4. **One ModelContext per view hierarchy**
    - Pass from parent via `@Environment(\.modelContext)`
    - Don't create new contexts unnecessarily
 
@@ -943,12 +1153,64 @@ let text = context.tokenizer.decode(tokens: tokens)
 
 ---
 
+## 🔍 Code Quality - SwiftLint
+
+**What is SwiftLint?**
+A tool that automatically checks your Swift code for style issues, common bugs, and anti-patterns.
+
+**Why use it?**
+- ✅ Catches silly mistakes before runtime
+- ✅ Enforces consistent code style across the project
+- ✅ Prevents common bugs (unused variables, force unwraps, etc.)
+- ✅ 2-minute setup, saves hours of debugging
+
+**Setup (Quick):**
+
+1. **Install SwiftLint:**
+   ```bash
+   brew install swiftlint
+   ```
+
+2. **Create `.swiftlint.yml` in project root:**
+   ```yaml
+   disabled_rules:
+     - trailing_whitespace  # Allow trailing spaces
+   opt_in_rules:
+     - force_unwrapping  # Warn on force unwraps (!)
+   excluded:
+     - Pods
+     - .build
+   line_length: 120
+   ```
+
+3. **Add Build Phase in Xcode:**
+   - Target > Build Phases > + > New Run Script Phase
+   - Add script:
+     ```bash
+     if which swiftlint >/dev/null; then
+       swiftlint
+     else
+       echo "warning: SwiftLint not installed, run: brew install swiftlint"
+     fi
+     ```
+
+4. **Run before commits:**
+   ```bash
+   swiftlint --strict  # Fails if ANY warnings
+   ```
+
+**Goal:** Zero warnings, zero errors before committing.
+
+---
+
 ## 📚 Useful Resources
 
-- [MLX Swift Examples](https://github.com/ml-explore/mlx-swift-examples) - Official repo
+- [SwiftAgents](https://github.com/twostraws/SwiftAgents) - Modern Swift/SwiftUI best practices for LLMs
+- [MLX Swift Examples](https://github.com/ml-explore/mlx-swift-examples) - Official MLX repo
 - [Fullmoon source](https://github.com/mainframecomputer/fullmoon-ios) - Architecture reference
 - [SwiftData docs](https://developer.apple.com/documentation/swiftdata) - Apple docs
 - [Swift Testing](https://developer.apple.com/documentation/testing) - Testing framework
+- [SwiftLint](https://github.com/realm/SwiftLint) - Code quality tool
 
 ---
 
@@ -970,11 +1232,12 @@ let text = context.tokenizer.decode(tokens: tokens)
 Before considering any step "done":
 
 - [ ] All tests pass (⌘U in Xcode)
+- [ ] SwiftLint passes with zero warnings (`swiftlint --strict`)
 - [ ] No warnings in console
 - [ ] Code compiles on iPhone + iPad simulators
 - [ ] SwiftUI Previews work
-- [ ] Code follows Swift conventions
-- [ ] Comments are up to date
+- [ ] Code follows Swift conventions & SwiftAgents best practices
+- [ ] Comments are up to date (in French for Romain)
 - [ ] No dead code (commented or unused)
 - [ ] Feature works as expected on real device
 

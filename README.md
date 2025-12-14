@@ -1,4 +1,4 @@
-# 🌙 Local LLM Chat
+# 📟 Local LLM Chat
 
 iOS chat app with **Llama 3.2 1B running locally** (no internet).
 
