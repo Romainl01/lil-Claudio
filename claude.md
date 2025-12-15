@@ -1071,9 +1071,22 @@ struct LLMEvaluatorTests {
 6. ❌ Uncheck the **test target** (e.g., "lil ClaudioTests")
 7. Rebuild with ⌘B
 
-**Why this happens:** When you create files outside Xcode (via terminal/scripts), they aren't automatically added to targets.
+**Why this happens:** When you create files outside Xcode (via terminal/scripts/AI tools), they aren't automatically added to targets.
 
-**Alternative fix:** Right-click folder → "Add Files to..." → Select file → Check correct target → Add
+**🎯 BEST PRACTICE - Always Create Files Through Xcode UI:**
+
+To avoid this issue entirely:
+
+1. **Right-click** on the folder where you want the file (e.g., `Features/Chat/`)
+2. Select **"New File..."** (or press ⌘N)
+3. Choose **Swift File** template
+4. Name the file
+5. ✅ **IMPORTANT:** Verify "Targets" shows your app target checked
+6. Click **Create**
+
+This ensures files are automatically registered with Xcode.
+
+**Alternative fix if file already exists:** Right-click folder → "Add Files to..." → Select file → Check correct target → Add
 
 ---
 

@@ -492,11 +492,13 @@ struct MessageTests {
 Now let's make the tests pass:
 
 1. Right-click on **Features/Chat** folder
-2. **New Group** named **Models**
-3. Right-click on **Models** folder > **New File...**
+2. **New Group** named **Models** (optional - can put directly in Chat folder)
+3. Right-click on **Chat** (or **Models**) folder > **New File...**
 4. Choose **Swift File**
 5. Name it **Message.swift**
-6. Replace code with:
+6. ✅ **CRITICAL:** Verify "Targets" shows **"lil Claudio"** checked (NOT the test target!)
+7. Click **Create**
+8. Replace the template code with:
 
 ```swift
 import SwiftData
