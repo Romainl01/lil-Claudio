@@ -30,6 +30,31 @@ This file contains:
 3. Ask Romain which step you're working on
 4. Write tests FIRST (TDD), then implement
 
+**🚨 CRITICAL RULE: File Creation**
+**NEVER use Write/Edit tools to create Swift files directly!**
+- ❌ **DON'T:** Use `Write` tool to create .swift files (they won't be added to Xcode targets)
+- ✅ **DO:** Tell Romain to create files through **Xcode UI** (Right-click > New File), then provide code to paste
+- **Why:** Files created outside Xcode aren't automatically added to build targets, causing "Cannot find X in scope" errors
+
+**🚨 MANDATORY: Import Checklist for Swift Files**
+**EVERY TIME you provide Swift code, verify these imports are included:**
+
+```swift
+// ✅ ALWAYS check if these are needed:
+import Foundation    // Required if using: Date, UUID, TimeInterval, URL, Data, etc.
+import SwiftUI       // Required for: View, State, Binding, Color, Font, etc.
+import SwiftData     // Required for: @Model, ModelContext, Query, etc.
+import Observation   // Required for: @Observable (iOS 17+)
+
+// Example - If code uses Date or UUID → MUST import Foundation!
+```
+
+**Quick reference:**
+- Uses `Date`, `UUID`, `TimeInterval`? → `import Foundation`
+- Uses `@Model`, `ModelContext`? → `import SwiftData`
+- Uses `@Observable`? → `import Observation`
+- Uses `Color`, `Text`, `View`? → `import SwiftUI`
+
 **For Romain:**
 When starting Claude Code, your first prompt should be:
 ```

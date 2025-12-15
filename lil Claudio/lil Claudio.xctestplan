@@ -1,0 +1,43 @@
+{
+  "configurations" : [
+    {
+      "id" : "D72A4947-0D74-4C23-97A4-C388D0084BB2",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:lil Claudio.xcodeproj",
+      "identifier" : "72FB14402EEF62C500A0F1F4",
+      "name" : "lil Claudio"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:lil Claudio.xcodeproj",
+        "identifier" : "72FB144D2EEF62C700A0F1F4",
+        "name" : "lil ClaudioTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "skippedTests" : [
+        "lil_ClaudioUITests",
+        "lil_ClaudioUITests\/testExample()",
+        "lil_ClaudioUITests\/testLaunchPerformance()"
+      ],
+      "target" : {
+        "containerPath" : "container:lil Claudio.xcodeproj",
+        "identifier" : "72FB14572EEF62C700A0F1F4",
+        "name" : "lil ClaudioUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

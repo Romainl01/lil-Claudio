@@ -635,10 +635,20 @@ struct LLMEvaluatorTests {
 
 **4B. GREEN - Implementation**
 
-1. Create **Core/LLM/LLMEvaluator.swift**
-2. Add this code:
+**🎯 IMPORTANT: Create file through Xcode UI to avoid target issues!**
+
+1. **In Xcode**, right-click on **Core/LLM** folder in Project Navigator
+2. Select **"New File..."** (or press ⌘N)
+3. Choose **"Swift File"** template
+4. Name it **"LLMEvaluator"** (without .swift)
+5. ✅ **CRITICAL:** In the file creation dialog, verify **"Targets"** shows:
+   - ✅ **"lil Claudio"** is CHECKED
+   - ❌ **"lil ClaudioTests"** is UNCHECKED
+6. Click **"Create"**
+7. **Replace the template code** with this:
 
 ```swift
+import Foundation
 import MLX
 import MLXLLM
 import MLXLMCommon
