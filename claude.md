@@ -57,6 +57,39 @@ Building an iOS/macOS chat app with local LLM (Llama 3.2 1B) using SwiftUI, MLX,
 
 ---
 
+## 🎓 Step-by-Step Guide for Beginners
+
+**Think of building an app like building a house:**
+
+### Phase 1: Foundation (Steps 1-2)
+- **Step 1: Project Setup** → Laying the foundation (creating the Xcode project, adding tools)
+- **Step 2: Design Tokens** → Choosing paint colors & materials before building (colors, fonts, spacing)
+
+### Phase 2: Core Logic / "The Brain" (Steps 3-5)
+- **Step 3: Message Model** → Creating the "envelope" that holds messages
+  - **What it does:** Defines what a message IS (who sent it, what text, when)
+  - **Why it matters:** Without this, the app has nowhere to store chat messages
+  - **You'll learn:** How to create database models with SwiftData
+
+- **Step 4: LLMEvaluator** → The AI "engine" that generates responses
+  - **What it does:** Downloads the AI model, loads it into memory, generates text
+  - **Why it matters:** This is what makes the app "smart" - it's the local AI brain
+  - **You'll learn:** How to integrate MLX (Apple's AI framework), streaming responses
+
+- **Step 5: ChatViewModel** → The "conductor" that coordinates everything
+  - **What it does:** Connects the UI to the AI (sends messages, gets responses, saves to database)
+  - **Why it matters:** This is the glue between what user sees and what AI does
+  - **You'll learn:** ViewModel pattern, async/await, state management
+
+### Phase 3: User Interface / "What You See" (Steps 6-8)
+- **Step 6: Splash Screen** → The welcome screen when app starts
+- **Step 7: Download Screen** → Shows progress while AI model downloads (1-2 minutes first time)
+- **Step 8: Chat Screen** → The main screen where you type and see responses
+
+**Key principle:** We build from **inside-out** (brain first, UI last) because the UI needs the brain to work!
+
+---
+
 ## 🎯 Core Development Principles
 
 ### 1. Test-Driven Development (TDD) - MANDATORY
@@ -1018,6 +1051,51 @@ struct LLMEvaluatorTests {
     }
 }
 ```
+
+---
+
+## 🛠️ Common Xcode Issues for Beginners
+
+### Issue 1: "Cannot find [ClassName] in scope" in Tests
+
+**Problem:** Tests can't find your classes even though they exist.
+
+**Cause:** The file wasn't added to the Xcode project target properly.
+
+**Fix:**
+1. Find the file in Project Navigator (left sidebar)
+2. Click on the file
+3. Open File Inspector (right panel - click folder icon if hidden)
+4. Look for "Target Membership" section
+5. ✅ Check the **app target** (e.g., "lil Claudio")
+6. ❌ Uncheck the **test target** (e.g., "lil ClaudioTests")
+7. Rebuild with ⌘B
+
+**Why this happens:** When you create files outside Xcode (via terminal/scripts), they aren't automatically added to targets.
+
+**Alternative fix:** Right-click folder → "Add Files to..." → Select file → Check correct target → Add
+
+---
+
+### Issue 2: "Module compiled with Swift X cannot be imported by Swift Y"
+
+**Problem:** Dependency version mismatch.
+
+**Fix:**
+1. File → Packages → Reset Package Caches
+2. Clean build folder (⌘⇧K)
+3. Rebuild (⌘B)
+
+---
+
+### Issue 3: Preview doesn't work / shows errors
+
+**Problem:** SwiftUI Preview crashes or won't load.
+
+**Fix:**
+1. Press ⌥⌘P to refresh preview
+2. If that fails: Editor → Canvas → Restart Canvas
+3. If still broken: Clean build (⌘⇧K) → Rebuild (⌘B)
 
 ---
 
