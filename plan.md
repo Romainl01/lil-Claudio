@@ -418,7 +418,7 @@ Add this at the bottom of **DesignTokens.swift**:
 
 ---
 
-#### **Step 3: Message Model + Tests**
+#### **✅ Step 3: Message Model + Tests** ✅ COMPLETED
 **Time:** 30-40 minutes
 **Goal:** Create the data model for chat messages using Test-Driven Development
 
@@ -452,6 +452,7 @@ TDD means: **Test First, Code Second**
 ```swift
 import Testing
 import SwiftData
+import Foundation
 @testable import lil_Claudio
 
 @Suite("Message Model Tests")
@@ -507,10 +508,10 @@ import Foundation
 /// Représente un message dans le chat (utilisateur ou assistant)
 @Model
 class Message {
-    var id: UUID = UUID()
-    var role: Role = .user
-    var content: String = ""
-    var timestamp: Date = Date()
+    var id: UUID
+    var role: Role
+    var content: String
+    var timestamp: Date
 
     init(role: Role, content: String) {
         self.id = UUID()
@@ -537,7 +538,16 @@ You'll see green checkmarks ✓ next to each test!
 ```swift
 @Model  // ← This tells Swift: "This is a database model"
 class Message {
-    var id: UUID = UUID()  // ← Must have default value (no .unique for CloudKit)
+    var id: UUID  // ← NO default values on properties (set in init instead)
+    var role: Role
+    var content: String
+    var timestamp: Date
+
+    init(role: Role, content: String) {
+        self.id = UUID()  // ← Values set HERE in init
+        self.role = role
+        self.content = content
+        self.timestamp = Date()
     // ...
 }
 ```
