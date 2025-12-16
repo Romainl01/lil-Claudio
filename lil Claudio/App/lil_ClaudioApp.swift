@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct lil_ClaudioApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashView()
         }
+        .modelContainer(for: Message.self)  // Configure SwiftData pour sauvegarder les messages
     }
 }
