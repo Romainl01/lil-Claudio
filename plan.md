@@ -1032,18 +1032,39 @@ UI updates automatically (thanks to @Observable!)
 
 ### **Phase 3: UI Screens (Steps 6-8)**
 
-_(Continued in next message due to length...)_
+---
 
-**Current Status:** We've completed the foundation! ✅
-- ✅ Models (Message, LLMEvaluator, ChatViewModel)
-- ✅ Tests (all passing!)
-- ⏳ Next: Build the actual screens users will see
+#### **✅ Step 6: Splash Screen** ✅ COMPLETED
+**Time:** 45-60 minutes
+**Goal:** Create entry screen with smart navigation
 
-**🎓 Take a Break!**
-You've done the hardest part (the "brain" of the app). The UI will be more visual and fun! When ready, we'll tackle:
-- Step 6: Splash screen
-- Step 7: Download screen
-- Step 8: Chat screen
+**What You Built:**
+- ✅ SplashView with 📟 logo and "lil claudio" title
+- ✅ Timer using `Task.sleep(for: .seconds(1.5))`
+- ✅ Smart navigation logic:
+  - If `isModelDownloaded == true` → Navigate to ChatView
+  - If `isModelDownloaded == false` → Navigate to DownloadView
+- ✅ Uses `@AppStorage` to persist model download state
+- ✅ Updated app entry point in `lil_ClaudioApp.swift`
+
+**Files Created:**
+- `Features/Splash/SplashView.swift`
+
+**Commits:**
+- `feat: implement SplashView with smart navigation (Step 6)`
+- `docs: update documentation for Step 6 (SplashView)`
+
+---
+
+**Current Status:** Phase 3 in progress! 🎨
+- ✅ Phase 1: Foundation (Steps 1-2)
+- ✅ Phase 2: Core Logic (Steps 3-5)
+- 🔄 Phase 3: UI Screens (Steps 6-8)
+  - ✅ Step 6: Splash screen ← COMPLETED!
+  - ⏳ Step 7: Download screen
+  - ⏳ Step 8: Chat screen
+
+**Next:** Step 7 - Download Screen (progress bar, model download)
 
 ---
 
