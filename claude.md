@@ -24,6 +24,11 @@ This file contains:
 6. Common bugs to avoid
 7. Testing examples
 
+**📚 Related Documentation:**
+- **`documentation.md`** - Complete project documentation (architecture, setup, troubleshooting)
+- **`plan.md`** - Implementation roadmap with step-by-step guides
+- **⚠️ Keep `documentation.md` updated** when adding features, changing architecture, or fixing critical bugs
+
 **At the start of each session:**
 1. Read `plan.md` to understand the current phase
 2. Read this file to understand best practices
@@ -1356,6 +1361,7 @@ Before considering any step "done":
 - [ ] Comments are up to date (in French for Romain)
 - [ ] No dead code (commented or unused)
 - [ ] Feature works as expected on real device
+- [ ] **Documentation updated** (if adding features, changing architecture, fixing critical bugs)
 
 ---
 

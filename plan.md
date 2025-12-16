@@ -1049,7 +1049,12 @@ You've done the hardest part (the "brain" of the app). The UI will be more visua
 
 ## 📚 Additional Resources
 
-- [CLAUDE.md](./CLAUDE.md) - Detailed technical guidelines
+**Project Documentation:**
+- **[documentation.md](./documentation.md)** - Complete project docs (architecture, setup, troubleshooting)
+- **[CLAUDE.md](./CLAUDE.md)** - Detailed technical guidelines for AI assistant
+- **⚠️ Keep documentation.md updated** when adding features or making architectural changes
+
+**External Resources:**
 - [MLX Swift Examples](https://github.com/ml-explore/mlx-swift-examples)
 - [SwiftData Docs](https://developer.apple.com/documentation/swiftdata)
 - [Swift Testing](https://developer.apple.com/documentation/testing)
