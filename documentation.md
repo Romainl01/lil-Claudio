@@ -554,9 +554,15 @@ Romain Lagrange
 ---
 
 **Last Updated:** December 16, 2025
-**Current Version:** 0.1.0 (Phase 3, Step 6 complete - Splash screen implemented)
+**Current Version:** 0.1.0 (Phase 3, Step 7 complete - Download screen implemented)
 
 **Recent Updates:**
+- ✅ **Step 7 (Dec 16, 2025):** DownloadView with progress tracking implemented
+  - Progress bar connected to LLMEvaluator
+  - Real-time percentage display (0% → 100%)
+  - Auto-navigation to ChatView when download completes
+  - Model download state persisted with @AppStorage
+  - Fixed custom color syntax (Color.textSecondary, etc.)
 - ✅ **Step 6 (Dec 16, 2025):** SplashView with smart navigation implemented
   - 📟 Logo and "lil claudio" title display
   - 1.5 second timer with Task.sleep
