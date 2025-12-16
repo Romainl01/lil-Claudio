@@ -1068,6 +1068,43 @@ UI updates automatically (thanks to @Observable!)
 
 ---
 
+## 🔧 Step 8 Refinements - Liquid Glass & UX Improvements
+
+**Current Focus:** Applying iOS 26 Liquid Glass effect and fixing UX issues
+
+### **Todo List (13 tasks)**
+
+**Phase 1: Research & Documentation** ✅
+- [x] Research and document iOS 26 liquid glass effect API
+- [x] Add liquid glass documentation to claude.md and plan.md
+
+**Phase 2: Color Fixes**
+- [ ] Get exact colors from Figma for input field and placeholder
+- [ ] Update DesignTokens.swift with correct Figma colors
+
+**Phase 3: Liquid Glass Implementation**
+- [ ] Apply liquid glass effect to header buttons (menu & help)
+- [ ] Apply liquid glass effect to text input field
+- [ ] Apply liquid glass effect to send button
+
+**Phase 4: UI/UX Improvements**
+- [ ] Fix input field placeholder color for better contrast
+- [ ] Fix message positioning (bottom-aligned, grow upward)
+- [ ] Add auto-focus to text input with 300ms delay
+- [ ] Add streaming animation (fade-in + scale) to AI responses
+
+**Phase 5: Testing & Deploy**
+- [ ] Build and test all changes in Xcode
+- [ ] Commit and push fixes to main
+
+**iOS 26 Liquid Glass Resources:**
+- [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass)
+- [Applying Liquid Glass to Custom Views](https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views)
+- [WWDC 2025 Session 323](https://developer.apple.com/videos/play/wwdc2025/323/)
+- [Donny Wals Tutorial](https://www.donnywals.com/designing-custom-ui-with-liquid-glass-on-ios-26/)
+
+---
+
 ## 📚 Additional Resources
 
 **Project Documentation:**

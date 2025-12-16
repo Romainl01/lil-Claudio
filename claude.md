@@ -547,7 +547,145 @@ let fileURL = docURL.appending(path: "data.json")
 
 ---
 
-### 3. MLX Integration - Step by Step
+### 3. iOS 26 Liquid Glass Effect
+
+**What is Liquid Glass?**
+Liquid Glass is a translucent material introduced in iOS 26 that reflects and refracts its surroundings. It creates a lightweight, dynamic material for controls and navigational elements, inspired by the optical properties of glass and the fluidity of liquid.
+
+**Official Documentation:**
+- [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass)
+- [Applying Liquid Glass to Custom Views](https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views)
+- [WWDC 2025 Session 323](https://developer.apple.com/videos/play/wwdc2025/323/) - Build a SwiftUI app with the new design
+
+**Design Principles:**
+- ✅ Use for UI elements that sit "on top" of content (toolbars, buttons, tab bars)
+- ❌ Don't apply to primary content (creates visual clutter)
+- ✅ Group related glass elements together for cohesion
+- ✅ Use tinting sparingly for visual hierarchy
+
+#### Basic Implementation
+
+**Simple Glass Effect:**
+```swift
+Button {
+    // Action
+} label: {
+    Label("Home", systemImage: "house")
+        .labelStyle(.iconOnly)
+        .frame(width: 50, height: 50)
+        .foregroundStyle(.white)
+}
+.glassEffect()  // ← Apply glass effect
+```
+
+**Tinted Glass (with color):**
+```swift
+.glassEffect(.regular.tint(.purple.opacity(0.8)))
+```
+
+**Interactive Glass (scale & shimmer on tap):**
+```swift
+.glassEffect(.regular.tint(.purple.opacity(0.8)).interactive())
+```
+
+#### Grouping Glass Elements
+
+Use `GlassEffectContainer` to blend multiple glass components:
+
+```swift
+GlassEffectContainer {
+    HStack(spacing: 12) {
+        Button("Edit") { }
+            .glassEffect()
+
+        Button("Share") { }
+            .glassEffect()
+
+        Button("Delete") { }
+            .glassEffect()
+    }
+}
+```
+
+When elements are positioned closely, they blend together creating a unified "liquid" appearance.
+
+#### Real-World Example (from this project)
+
+**Glass Button Component:**
+```swift
+struct GlassButton: View {
+    let icon: String
+    var size: CGFloat = 48
+    var tint: Color? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: size * 0.45, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: size, height: size)
+        }
+        .glassEffect(
+            .regular
+                .tint(tint?.opacity(0.8) ?? .clear)
+                .interactive()
+        )
+    }
+}
+```
+
+**Glass Input Field:**
+```swift
+TextField("message", text: $text)
+    .padding()
+    .background {
+        RoundedRectangle(cornerRadius: 26)
+            .glassEffect(.regular.tint(.gray.opacity(0.3)))
+    }
+```
+
+#### Common Patterns
+
+**1. Floating Action Button:**
+```swift
+Button(action: send) {
+    Image(systemName: "arrow.up")
+}
+.glassEffect(.regular.interactive())
+```
+
+**2. Header Toolbar:**
+```swift
+HStack {
+    GlassButton(icon: "line.3.horizontal") { }
+    Spacer()
+    Text("chat")
+    Spacer()
+    GlassButton(icon: "questionmark.circle") { }
+}
+```
+
+**3. Tab Bar:**
+```swift
+HStack {
+    ForEach(tabs) { tab in
+        Button(tab.title) { }
+            .glassEffect()
+    }
+}
+```
+
+**Key Takeaways:**
+- Use `.glassEffect()` modifier on any SwiftUI view
+- Add `.interactive()` for tap feedback (scale + shimmer)
+- Use `GlassEffectContainer` to group related elements
+- Tint with `.tint()` for color (keep opacity 0.3-0.8)
+- Apply to buttons, toolbars, floating UI — not main content
+
+---
+
+### 4. MLX Integration - Step by Step
 
 #### Step 1: Add Packages
 
