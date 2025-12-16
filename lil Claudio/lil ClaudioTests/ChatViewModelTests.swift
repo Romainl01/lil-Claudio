@@ -65,6 +65,17 @@ import SwiftData
           viewModel.clearChat()
           #expect(viewModel.messages.isEmpty)
       }
+
+      @Test("Streaming output is accessible")
+      @MainActor
+      func testStreamingOutput() {
+          let config = ModelConfiguration(isStoredInMemoryOnly: true)
+          let container = try? ModelContainer(for: Message.self, configurations: config)
+          let viewModel = ChatViewModel(modelContext: container!.mainContext)
+
+          // Au départ, le streaming output est vide
+          #expect(viewModel.streamingOutput.isEmpty)
+      }
   }//
 //  ChatViewModelTests.swift
 //  lil Claudio

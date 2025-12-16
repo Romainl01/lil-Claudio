@@ -16,6 +16,11 @@ import SwiftUI
       @ObservationIgnored
     @AppStorage("systemPrompt") private var systemPrompt = "you are a helpful assistant"
 
+      /// Accès au texte en cours de génération (streaming)
+      var streamingOutput: String {
+          llmEvaluator.output
+      }
+
       init(modelContext: ModelContext) {
           self.modelContext = modelContext
           loadMessages()
@@ -43,6 +48,15 @@ import SwiftUI
           inputText = ""
           loadMessages()
           isGenerating = true
+
+          // S'assurer que le modèle est chargé avant de générer
+          do {
+              try await llmEvaluator.load()
+          } catch {
+              print("Erreur lors du chargement du modèle: \(error)")
+              isGenerating = false
+              return
+          }
 
           // Générer la réponse
           let response = await llmEvaluator.generate(

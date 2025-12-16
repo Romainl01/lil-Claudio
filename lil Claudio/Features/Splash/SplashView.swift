@@ -24,12 +24,10 @@ struct SplashView: View {
         if showNextScreen {
             // Navigation intelligente après le splash
             if isModelDownloaded {
-                // TODO: Afficher ChatView (Step 8)
-                Text("Chat will appear here (Step 8)")
-                    .font(.headline)
-                    .foregroundStyle(.black)
+                // Afficher ChatView (modèle déjà téléchargé)
+                ChatView()
             } else {
-                // Afficher DownloadView (Step 7)
+                // Afficher DownloadView (modèle pas encore téléchargé)
                 DownloadView()
             }
         } else {

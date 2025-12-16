@@ -63,10 +63,7 @@ struct DownloadView: View {
                 await downloadModel()
             }
             .navigationDestination(isPresented: $navigateToChatView) {
-                // ChatView() // TODO: Uncomment in Step 8 when ChatView is created
-                Text("Chat will appear here")
-                    .font(.headerTitle)
-                    .foregroundStyle(Color.textSecondary)
+                ChatView()
             }
         }
     }
