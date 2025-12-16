@@ -16,8 +16,7 @@ struct SplashView: View {
     @State private var showNextScreen = false
 
     /// Vérifie si le modèle LLM est déjà téléchargé
-    @AppStorage("isModelDownloaded") private var isModelDownloaded =
-false
+    @AppStorage("isModelDownloaded") private var isModelDownloaded = false
 
     // MARK: - Body
 
@@ -26,12 +25,12 @@ false
             // Navigation intelligente après le splash
             if isModelDownloaded {
                 // TODO: Afficher ChatView (Step 8)
-                Text("→ Chat Screen")
+                Text("Chat will appear here (Step 8)")
                     .font(.headline)
+                    .foregroundStyle(.black)
             } else {
-                // TODO: Afficher DownloadView (Step 7)
-                Text("→ Download Screen")
-                    .font(.headline)
+                // Afficher DownloadView (Step 7)
+                DownloadView()
             }
         } else {
             // L'écran de splash lui-même

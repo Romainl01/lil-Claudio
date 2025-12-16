@@ -63,9 +63,103 @@ import Observation   // Required for: @Observable (iOS 17+)
 **For Romain:**
 When starting Claude Code, your first prompt should be:
 ```
-Read plan.md and claude.md before we start. 
+Read plan.md and claude.md before we start.
 We're working on Phase X, Step Y. Follow TDD approach.
 ```
+
+---
+
+## 🚨 CRITICAL WORKFLOW RULES
+
+### 1. NEVER Build in Terminal ❌
+
+**❌ NEVER use these commands:**
+- `xcodebuild` (command-line builds)
+- `swift test` (command-line tests)
+- Any Bash commands to build or run the app
+
+**✅ ALWAYS tell Romain:**
+- "Please build the project in Xcode (⌘B) and verify it succeeds"
+- "Please run tests in Xcode (⌘U) and confirm they all pass"
+- "Please check for any compiler warnings"
+
+**Why?**
+- Command-line builds can have different results than Xcode builds
+- Xcode provides better error messages and diagnostics
+- Romain can see exactly what's happening in their environment
+- Avoids false positives/negatives from terminal builds
+
+---
+
+### 2. Wait for Build Confirmation Before Committing ⏸️
+
+**Workflow for EVERY code change:**
+
+```
+1. Claude provides code changes
+   ↓
+2. Romain creates files in Xcode (if needed)
+   ↓
+3. Romain pastes code
+   ↓
+4. Romain builds in Xcode (⌘B)
+   ↓
+5. Romain runs tests (⌘U) if applicable
+   ↓
+6. Romain confirms: "Build passes ✅" or "Tests pass ✅"
+   ↓
+7. ONLY THEN: Claude commits changes
+```
+
+**❌ DON'T commit immediately after providing code**
+**✅ DO wait for Romain's explicit confirmation**
+
+**Example:**
+```
+Claude: "Here's the code for DownloadView. Please:
+1. Create the file in Xcode (Features/Download/DownloadView.swift)
+2. Paste the code
+3. Build with ⌘B
+4. Let me know if it builds successfully ✅"
+
+Romain: "Build passes ✅"
+
+Claude: "Great! Now let me commit this..."
+[Runs git commands]
+```
+
+**Why this is better:**
+- ✅ Ensures code actually works in Romain's environment
+- ✅ Catches issues before they're committed (cleaner git history)
+- ✅ Gives Romain control over when commits happen
+- ✅ Avoids reverting broken commits
+- ✅ Better learning experience (Romain sees immediate feedback)
+
+---
+
+### 3. Build & Test Checklist (For Romain)
+
+**After Claude provides code, always do:**
+
+1. **Build** (`⌘B`):
+   - Check for red errors ❌
+   - Check for yellow warnings ⚠️
+   - Wait for "Build Succeeded" ✅
+
+2. **Run Tests** (`⌘U`) if applicable:
+   - Check test results panel
+   - All tests should show green ✓
+   - No red failures ✗
+
+3. **Check Preview** (if it's a SwiftUI view):
+   - Open Canvas (`⌥⌘↵`)
+   - Verify UI looks correct
+   - Check for preview errors
+
+4. **Confirm to Claude:**
+   - "Build passes ✅"
+   - "Tests pass ✅"
+   - Or: "Build failed with error X" → Claude fixes it
 
 ---
 
@@ -1350,18 +1444,27 @@ A tool that automatically checks your Swift code for style issues, common bugs, 
 
 ## ✅ Pre-Commit Checklist
 
-Before considering any step "done":
+**🚨 CRITICAL: Romain performs these checks, NOT Claude!**
 
-- [ ] All tests pass (⌘U in Xcode)
-- [ ] SwiftLint passes with zero warnings (`swiftlint --strict`)
-- [ ] No warnings in console
-- [ ] Code compiles on iPhone + iPad simulators
-- [ ] SwiftUI Previews work
-- [ ] Code follows Swift conventions & SwiftAgents best practices
-- [ ] Comments are up to date (in French for Romain)
-- [ ] No dead code (commented or unused)
-- [ ] Feature works as expected on real device
+**Before Claude commits ANY code, Romain must verify:**
+
+- [ ] **Build succeeds** (⌘B in Xcode) - Romain confirms "Build passes ✅"
+- [ ] **All tests pass** (⌘U in Xcode) - Romain confirms "Tests pass ✅"
+- [ ] **No compiler warnings** - Check Issues Navigator in Xcode
+- [ ] **SwiftUI Previews work** (if applicable) - Verify UI looks correct
+- [ ] **Code follows Swift conventions** - Clean, readable, well-commented
+
+**Additional checks (less frequent):**
+- [ ] SwiftLint passes with zero warnings (`swiftlint --strict`) - optional for now
+- [ ] Code compiles on iPhone + iPad simulators - if UI changes
+- [ ] Feature works as expected on real device - before final release
 - [ ] **Documentation updated** (if adding features, changing architecture, fixing critical bugs)
+
+**Workflow:**
+1. Claude provides code
+2. **Romain builds & tests in Xcode**
+3. **Romain confirms "Build passes ✅"**
+4. **ONLY THEN Claude commits**
 
 ---
 
