@@ -119,12 +119,13 @@ lil Claudio/
 │   │   └── lil_ClaudioApp.swift  # @main app struct
 │   │
 │   ├── Features/                 # Feature modules
-│   │   ├── Splash/               # Splash screen (logo)
-│   │   ├── Download/             # Model download screen
-│   │   └── Chat/                 # Chat feature
-│   │       ├── Views/            # SwiftUI views
+│   │   ├── Splash/               # Splash screen (logo) ✅
+│   │   │   └── SplashView.swift  # Entry point with smart navigation
+│   │   ├── Download/             # Model download screen ⏳
+│   │   └── Chat/                 # Chat feature ✅
 │   │       ├── ViewModels/       # ChatViewModel
-│   │       └── Models/           # Message model
+│   │       │   └── ChatViewModel.swift
+│   │       └── Message.swift     # Message model (SwiftData)
 │   │
 │   ├── Core/                     # Shared code
 │   │   ├── LLM/                  # AI inference
@@ -154,7 +155,42 @@ lil Claudio/
 
 ## 🧩 Core Components
 
-### 1. Message (SwiftData Model)
+### 1. SplashView (Entry Point)
+
+**Location:** `Features/Splash/SplashView.swift`
+
+```swift
+struct SplashView: View {
+    @State private var showNextScreen = false
+    @AppStorage("isModelDownloaded") private var isModelDownloaded = false
+}
+```
+
+**Purpose:** App's entry screen with smart navigation.
+
+**Key Points:**
+- Shows 📟 logo and "lil claudio" title for 1.5 seconds
+- Uses `Task.sleep(for: .seconds(1.5))` for timer
+- Smart navigation:
+  - If model downloaded → Navigate to ChatView
+  - If not downloaded → Navigate to DownloadView
+- Uses `@AppStorage` to persist model download state
+
+**Flow:**
+```
+App launches → SplashView appears
+    ↓
+Wait 1.5 seconds
+    ↓
+Check isModelDownloaded
+    ↓
+├─ YES → ChatView
+└─ NO  → DownloadView
+```
+
+---
+
+### 2. Message (SwiftData Model)
 
 **Location:** `Features/Chat/Models/Message.swift`
 
@@ -177,7 +213,7 @@ class Message {
 
 ---
 
-### 2. LLMEvaluator (AI Engine)
+### 3. LLMEvaluator (AI Engine)
 
 **Location:** `Core/LLM/LLMEvaluator.swift`
 
@@ -210,7 +246,7 @@ class LLMEvaluator {
 
 ---
 
-### 3. ChatViewModel (Conductor)
+### 4. ChatViewModel (Conductor)
 
 **Location:** `Features/Chat/ViewModels/ChatViewModel.swift`
 
@@ -518,4 +554,11 @@ Romain Lagrange
 ---
 
 **Last Updated:** December 16, 2025
-**Current Version:** 0.1.0 (Phase 2 complete - Core logic implemented)
+**Current Version:** 0.1.0 (Phase 3, Step 6 complete - Splash screen implemented)
+
+**Recent Updates:**
+- ✅ **Step 6 (Dec 16, 2025):** SplashView with smart navigation implemented
+  - 📟 Logo and "lil claudio" title display
+  - 1.5 second timer with Task.sleep
+  - Smart navigation based on model download state
+  - Entry point configured in lil_ClaudioApp.swift
