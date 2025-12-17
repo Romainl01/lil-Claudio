@@ -7,6 +7,7 @@ struct ChatView: View {
     @State private var viewModel: ChatViewModel?
     @State private var scrollProxy: ScrollViewProxy?
     @FocusState private var isInputFocused: Bool
+    @State private var isVisible = false  // Pour fade-in au chargement
 
     var body: some View {
         ZStack {
@@ -26,14 +27,20 @@ struct ChatView: View {
                     .padding(.bottom, Spacing.md)
             }
         }
+        .opacity(isVisible ? 1 : 0)
+        .animation(.easeInOut(duration: 0.3), value: isVisible)
         .onAppear {
             if viewModel == nil {
                 viewModel = ChatViewModel(modelContext: modelContext)
             }
 
-            // Auto-focus input avec délai de 300ms
             Task {
-                try? await Task.sleep(for: .milliseconds(300))
+                // Attendre 400ms pour que les glass effects se chargent
+                try? await Task.sleep(for: .milliseconds(400))
+                isVisible = true
+
+                // Auto-focus input après le fade-in (300ms d'animation + 100ms)
+                try? await Task.sleep(for: .milliseconds(400))
                 isInputFocused = true
             }
         }

@@ -553,10 +553,15 @@ Romain Lagrange
 
 ---
 
-**Last Updated:** December 16, 2025
-**Current Version:** 0.1.0 (Phase 3, Step 7 complete - Download screen implemented)
+**Last Updated:** December 17, 2025
+**Current Version:** 0.1.0 (Phase 3, Step 8 in progress - Chat screen UX improvements)
 
 **Recent Updates:**
+- ✅ **UX Fix (Dec 17, 2025):** Fixed liquid glass effect rendering glitch in ChatView
+  - Added smooth fade-in animation (400ms delay + 300ms transition)
+  - Glass effects now fully loaded before view becomes visible
+  - Eliminated initial dark/solid appearance of glass buttons and input field
+  - Improved perceived app quality and polish
 - ✅ **Step 7 (Dec 16, 2025):** DownloadView with progress tracking implemented
   - Progress bar connected to LLMEvaluator
   - Real-time percentage display (0% → 100%)
