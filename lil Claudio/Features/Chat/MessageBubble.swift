@@ -11,10 +11,8 @@ struct MessageBubble: View {
             }
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                // Contenu du message (avec support markdown pour l'assistant)
+                // Contenu du message (avec support markdown pour l'assistant et sélection native)
                 messageText
-                    .font(.bodyText)
-                    .foregroundStyle(message.role == .user ? Color.textPrimary : Color.textNeutralDark)
                     .padding(.horizontal, Spacing.md)
                     .padding(.vertical, 12)
                     .background(
@@ -43,21 +41,33 @@ struct MessageBubble: View {
         .padding(.vertical, 4)
     }
 
-    // MARK: - Message Text avec support Markdown
+    // MARK: - Message Text avec support Markdown et sélection native
     @ViewBuilder
     private var messageText: some View {
         if message.role == .assistant {
             // Parse markdown pour les réponses de l'assistant
             // Option .inlineOnlyPreservingWhitespace préserve les sauts de ligne
             if let attributedString = try? AttributedString(markdown: message.content, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
-                Text(attributedString)
+                SelectableText(
+                    attributedText: attributedString,
+                    font: .systemFont(ofSize: 16),
+                    textColor: UIColor(Color.textNeutralDark)
+                )
             } else {
                 // Fallback si le parsing échoue
-                Text(message.content)
+                SelectableText(
+                    text: message.content,
+                    font: .systemFont(ofSize: 16),
+                    textColor: UIColor(Color.textNeutralDark)
+                )
             }
         } else {
             // Texte brut pour les messages utilisateur
-            Text(message.content)
+            SelectableText(
+                text: message.content,
+                font: .systemFont(ofSize: 16),
+                textColor: UIColor(Color.textPrimary)
+            )
         }
     }
 }

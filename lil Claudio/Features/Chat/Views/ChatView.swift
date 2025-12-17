@@ -70,6 +70,10 @@ struct ChatView: View {
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isInputFocused = false  // Dismiss keyboard when tapping header
+        }
     }
 
     // MARK: - Message List
@@ -115,21 +119,6 @@ struct ChatView: View {
                         .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                     }
                     .defaultScrollAnchor(.bottom)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isInputFocused = false  // Dismiss keyboard
-
-                        // Scroll to bottom to fill space left by keyboard
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            if let vm = viewModel {
-                                if vm.isGenerating {
-                                    scrollProxy?.scrollTo("streaming", anchor: .bottom)
-                                } else if let lastMessage = vm.messages.last {
-                                    scrollProxy?.scrollTo(lastMessage.id, anchor: .bottom)
-                                }
-                            }
-                        }
-                    }
                     .onAppear {
                         scrollProxy = proxy
                     }
@@ -145,18 +134,24 @@ struct ChatView: View {
                 // Parse markdown en temps réel pendant le streaming avec animation
                 Group {
                     if let output = viewModel?.streamingOutput {
-                        // Test SANS preprocessing - voir si markdown gère les \n nativement
+                        // Parse markdown en temps réel avec sélection native
                         if let attributedString = try? AttributedString(markdown: output, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
-                            Text(attributedString)
+                            SelectableText(
+                                attributedText: attributedString,
+                                font: .systemFont(ofSize: 16),
+                                textColor: UIColor(Color.textNeutralDark)
+                            )
                         } else {
-                            Text(output)
+                            SelectableText(
+                                text: output,
+                                font: .systemFont(ofSize: 16),
+                                textColor: UIColor(Color.textNeutralDark)
+                            )
                         }
                     } else {
                         Text("")
                     }
                 }
-                .font(.bodyText)
-                .foregroundStyle(Color.textNeutralDark)
                 .animation(.easeInOut(duration: 0.15), value: viewModel?.streamingOutput)
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, 12)

@@ -125,6 +125,10 @@ lil Claudio/
 │   │   └── Chat/                 # Chat feature ✅
 │   │       ├── ViewModels/       # ChatViewModel
 │   │       │   └── ChatViewModel.swift
+│   │       ├── Views/            # Chat UI components
+│   │       │   └── ChatView.swift
+│   │       ├── SelectableText.swift  # UIKit text selection wrapper
+│   │       ├── MessageBubble.swift   # Message bubble component
 │   │       └── Message.swift     # Message model (SwiftData)
 │   │
 │   ├── Core/                     # Shared code
@@ -277,6 +281,62 @@ class ChatViewModel {
 2. Call LLMEvaluator.generate()
 3. AI response → Save to SwiftData
 4. UI auto-updates (via @Observable)
+
+---
+
+### 5. SelectableText (Native Text Selection)
+
+**Location:** `Features/Chat/SelectableText.swift`
+
+```swift
+struct SelectableText: UIViewRepresentable {
+    let attributedText: AttributedString?
+    let plainText: String?
+    let font: UIFont
+    let textColor: UIColor
+
+    init(attributedText: AttributedString, ...)
+    init(text: String, ...)
+}
+```
+
+**Purpose:** Provides native iOS text selection for message content.
+
+**Key Points:**
+- Wraps UIKit's `UITextView` using `UIViewRepresentable`
+- Enables double-tap to select, long-press, drag handles, Copy/Share menu
+- Supports both plain text and markdown `AttributedString`
+- Forces consistent font/color (overrides markdown font attributes)
+- Read-only, selectable, non-scrollable
+
+**Why UIKit Instead of SwiftUI?**
+- SwiftUI's `.textSelection(.enabled)` had gesture conflicts in our view hierarchy
+- UITextView provides the exact same selection behavior as iOS Messages app
+- Guaranteed cross-iOS version compatibility
+- Full control over selection appearance
+
+**Usage:**
+```swift
+// Plain text
+SelectableText(
+    text: message.content,
+    font: .systemFont(ofSize: 16),
+    textColor: UIColor(Color.textPrimary)
+)
+
+// Markdown AttributedString
+SelectableText(
+    attributedText: attributedString,
+    font: .systemFont(ofSize: 16),
+    textColor: UIColor(Color.textNeutralDark)
+)
+```
+
+**Implementation Notes:**
+- Font and color applied to entire text (line 56-57) to override markdown's font
+- `textContainerInset = .zero` and `lineFragmentPadding = 0` for SwiftUI-like appearance
+- `isEditable = false, isSelectable = true` for read-only selection
+- `sizeThatFits()` ensures proper sizing in SwiftUI layouts
 
 ---
 
@@ -557,6 +617,14 @@ Romain Lagrange
 **Current Version:** 0.1.0 (Phase 3, Step 8 in progress - Chat screen UX improvements)
 
 **Recent Updates:**
+- ✅ **Feature (Dec 17, 2025):** Added native text selection to messages
+  - Created `SelectableText` component using UIViewRepresentable + UITextView
+  - Enables double-tap to select word, long-press with handles, Copy/Share menu
+  - Works with both plain text (user messages) and markdown (AI messages)
+  - Fixed font consistency issue (markdown was overriding font size)
+  - Removed ScrollView tap gesture that was blocking text selection
+  - Added tap-to-dismiss keyboard on header instead
+  - iOS Messages-like selection behavior for professional UX
 - ✅ **UX Fix (Dec 17, 2025):** Fixed liquid glass effect rendering glitch in ChatView
   - Added smooth fade-in animation (400ms delay + 300ms transition)
   - Glass effects now fully loaded before view becomes visible
