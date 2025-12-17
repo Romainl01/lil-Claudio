@@ -70,39 +70,36 @@ struct ChatView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack {
+                    // Spacer pour pousser le contenu vers le bas
+                    Spacer(minLength: 0)
+
                     // Empty state: wand.and.sparkles icon
                     if let vm = viewModel, vm.messages.isEmpty && !vm.isGenerating {
-                        Spacer()
-
                         Image(systemName: "wand.and.sparkles")
                             .font(.system(size: 48))
                             .foregroundStyle(Color.textSecondary.opacity(0.3))
                             .frame(maxWidth: .infinity)
+                            .padding(.bottom, Spacing.xl)
+                    }
 
-                        Spacer()
-                    } else {
-                        // Spacer pour pousser les messages vers le bas
-                        Spacer(minLength: 0)
+                    // Messages
+                    LazyVStack(spacing: Spacing.md) {
+                        if let vm = viewModel {
+                            ForEach(vm.messages) { message in
+                                MessageBubble(message: message)
+                                    .id(message.id)
+                            }
 
-                        // Messages
-                        LazyVStack(spacing: Spacing.md) {
-                            if let vm = viewModel {
-                                ForEach(vm.messages) { message in
-                                    MessageBubble(message: message)
-                                        .id(message.id)
-                                }
-
-                                // Streaming response bubble (pendant la génération)
-                                if vm.isGenerating && !vm.streamingOutput.isEmpty {
-                                    streamingBubble
-                                        .id("streaming")
-                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                                }
+                            // Streaming response bubble (pendant la génération)
+                            if vm.isGenerating && !vm.streamingOutput.isEmpty {
+                                streamingBubble
+                                    .id("streaming")
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                             }
                         }
-                        .padding(.top, Spacing.md)
-                        .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                     }
+                    .padding(.top, Spacing.md)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                 }
             }
             .onAppear {
@@ -150,16 +147,15 @@ struct ChatView: View {
                 get: { viewModel?.inputText ?? "" },
                 set: { viewModel?.inputText = $0 }
             ), axis: .vertical)
+            .textFieldStyle(.plain)
             .font(.inputText)
             .foregroundStyle(Color.textPrimary)
             .tint(Color.textSecondary) // Couleur du placeholder
             .padding(.horizontal, Spacing.md)
             .padding(.vertical, 14)
-            .background {
-                RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge)
-                    .glassEffect(.regular.tint(Color.neutralGray200.opacity(0.6)))
-            }
-            .lineLimit(1...5)
+            .lineLimit(1...6)
+            .glassEffect(.regular.interactive())
+            .clipShape(RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge))
             .focused($isInputFocused)
             .onSubmit {
                 sendMessage()

@@ -14,6 +14,6 @@ struct lil_ClaudioApp: App {
         WindowGroup {
             SplashView()
         }
-        .modelContainer(for: Message.self)  // Configure SwiftData pour sauvegarder les messages
+        .modelContainer(for: Message.self, inMemory: true)  // Messages temporaires, effacés au redémarrage
     }
 }
