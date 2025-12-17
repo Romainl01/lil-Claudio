@@ -67,43 +67,47 @@ struct ChatView: View {
 
     // MARK: - Message List
     private var messageList: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
+        Group {
+            if let vm = viewModel, vm.messages.isEmpty && !vm.isGenerating {
+                // Empty state: icône centrée (sans ScrollView)
                 VStack {
-                    // Spacer pour pousser le contenu vers le bas
-                    Spacer(minLength: 0)
+                    Spacer()
 
-                    // Empty state: wand.and.sparkles icon
-                    if let vm = viewModel, vm.messages.isEmpty && !vm.isGenerating {
-                        Image(systemName: "wand.and.sparkles")
-                            .font(.system(size: 48))
-                            .foregroundStyle(Color.textSecondary.opacity(0.3))
-                            .frame(maxWidth: .infinity)
-                            .padding(.bottom, Spacing.xl)
-                    }
+                    Image(systemName: "wand.and.sparkles")
+                        .font(.system(size: 48))
+                        .foregroundStyle(Color.textSecondary.opacity(0.3))
+                        .frame(maxWidth: .infinity)
 
-                    // Messages
-                    LazyVStack(spacing: Spacing.md) {
-                        if let vm = viewModel {
-                            ForEach(vm.messages) { message in
-                                MessageBubble(message: message)
-                                    .id(message.id)
-                            }
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                // Messages: ScrollView avec ancrage en bas
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: Spacing.md) {
+                            if let vm = viewModel {
+                                ForEach(vm.messages) { message in
+                                    MessageBubble(message: message)
+                                        .id(message.id)
+                                }
 
-                            // Streaming response bubble (pendant la génération)
-                            if vm.isGenerating && !vm.streamingOutput.isEmpty {
-                                streamingBubble
-                                    .id("streaming")
-                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                // Streaming response bubble (pendant la génération)
+                                if vm.isGenerating && !vm.streamingOutput.isEmpty {
+                                    streamingBubble
+                                        .id("streaming")
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
                             }
                         }
+                        .padding(.top, Spacing.md)
+                        .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                     }
-                    .padding(.top, Spacing.md)
-                    .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
+                    .defaultScrollAnchor(.bottom)
+                    .onAppear {
+                        scrollProxy = proxy
+                    }
                 }
-            }
-            .onAppear {
-                scrollProxy = proxy
             }
         }
     }
@@ -112,19 +116,27 @@ struct ChatView: View {
     private var streamingBubble: some View {
         HStack(alignment: .bottom, spacing: Spacing.sm) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel?.streamingOutput ?? "")
-                    .font(.bodyText)
-                    .foregroundStyle(Color.textNeutralDark)
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18)
-                            .fill(Color.white.opacity(0.8))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                    )
+                // Parse markdown en temps réel pendant le streaming
+                Group {
+                    if let output = viewModel?.streamingOutput,
+                       let attributedString = try? AttributedString(markdown: output) {
+                        Text(attributedString)
+                    } else {
+                        Text(viewModel?.streamingOutput ?? "")
+                    }
+                }
+                .font(.bodyText)
+                .foregroundStyle(Color.textNeutralDark)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.white.opacity(0.8))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
 
                 // Indicateur de frappe
                 Text("typing...")

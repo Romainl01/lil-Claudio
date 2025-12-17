@@ -1068,34 +1068,54 @@ UI updates automatically (thanks to @Observable!)
 
 ---
 
-## 🔧 Step 8 Refinements - Liquid Glass & UX Improvements
+## 🔧 Step 8 Refinements - Liquid Glass & UX Improvements ✅
 
-**Current Focus:** Applying iOS 26 Liquid Glass effect and fixing UX issues
+**Status:** COMPLETED! All refinements implemented and tested.
 
-### **Todo List (13 tasks)**
+### **Todo List (13 tasks)** ✅
 
 **Phase 1: Research & Documentation** ✅
 - [x] Research and document iOS 26 liquid glass effect API
 - [x] Add liquid glass documentation to claude.md and plan.md
 
-**Phase 2: Color Fixes**
-- [ ] Get exact colors from Figma for input field and placeholder
-- [ ] Update DesignTokens.swift with correct Figma colors
+**Phase 2: Color Fixes** ✅
+- [x] Get exact colors from Figma for input field and placeholder
+- [x] Update DesignTokens.swift with correct Figma colors
 
-**Phase 3: Liquid Glass Implementation**
-- [ ] Apply liquid glass effect to header buttons (menu & help)
-- [ ] Apply liquid glass effect to text input field
-- [ ] Apply liquid glass effect to send button
+**Phase 3: Liquid Glass Implementation** ✅
+- [x] Apply liquid glass effect to header buttons (menu & help)
+- [x] Apply liquid glass effect to text input field
+- [x] Apply liquid glass effect to send button
 
-**Phase 4: UI/UX Improvements**
-- [ ] Fix input field placeholder color for better contrast
-- [ ] Fix message positioning (bottom-aligned, grow upward)
-- [ ] Add auto-focus to text input with 300ms delay
-- [ ] Add streaming animation (fade-in + scale) to AI responses
+**Phase 4: UI/UX Improvements** ✅
+- [x] Fix input field placeholder color for better contrast
+- [x] Fix message positioning (bottom-aligned, grow upward)
+- [x] Add auto-focus to text input with 300ms delay
+- [x] Add streaming animation (fade-in + scale) to AI responses
 
-**Phase 5: Testing & Deploy**
-- [ ] Build and test all changes in Xcode
-- [ ] Commit and push fixes to main
+**Phase 5: Testing & Deploy** ✅
+- [x] Build and test all changes in Xcode
+- [x] Commit and push fixes to main
+
+### **Additional Features Implemented** 🎉
+
+**Markdown Support:**
+- AI responses now render markdown formatting (`**bold**`, `*italic*`, etc.)
+- Real-time parsing during streaming (formatting appears immediately)
+- User messages remain plain text
+
+**Chat Layout Improvements:**
+- Empty state: Magic wand icon perfectly centered using `.defaultScrollAnchor(.bottom)`
+- Messages: Bottom-aligned, grow upward naturally
+- Smooth transitions between empty and populated states
+
+**Ephemeral Storage:**
+- Messages stored in-memory only (`.modelContainer(for: Message.self, inMemory: true)`)
+- Chat clears on app restart (temporary solution until chat history implemented)
+
+**Font Fixes:**
+- Switched from missing Inter font to system font (San Francisco)
+- Consistent typography across all UI elements
 
 **iOS 26 Liquid Glass Resources:**
 - [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass)

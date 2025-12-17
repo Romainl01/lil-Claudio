@@ -52,10 +52,10 @@ extension Color {
 
 // MARK: - Typography
 extension Font {
-    static let splashTitle = Font.custom("Crimson Pro", size: 44)         // "lil claudio"
-    static let headerTitle = Font.custom("Inter", size: 16).weight(.medium) // "chat"
-    static let inputText = Font.custom("Inter", size: 16).weight(.medium)   // Placeholder input
-    static let bodyText = Font.system(size: 16, weight: .regular)           // Texte messages
+    static let splashTitle = Font.custom("Crimson Pro", size: 44)              // "lil claudio"
+    static let headerTitle = Font.system(size: 16, weight: .medium, design: .default) // "chat"
+    static let inputText = Font.system(size: 16, weight: .medium, design: .default)   // Placeholder input
+    static let bodyText = Font.system(size: 16, weight: .regular, design: .default)   // Texte messages
 }
 
 // MARK: - SF Symbols

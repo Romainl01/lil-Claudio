@@ -11,8 +11,8 @@ struct MessageBubble: View {
             }
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                // Contenu du message
-                Text(message.content)
+                // Contenu du message (avec support markdown pour l'assistant)
+                messageText
                     .font(.bodyText)
                     .foregroundStyle(message.role == .user ? Color.textPrimary : Color.textNeutralDark)
                     .padding(.horizontal, Spacing.md)
@@ -41,6 +41,23 @@ struct MessageBubble: View {
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, 4)
+    }
+
+    // MARK: - Message Text avec support Markdown
+    @ViewBuilder
+    private var messageText: some View {
+        if message.role == .assistant {
+            // Parse markdown pour les réponses de l'assistant
+            if let attributedString = try? AttributedString(markdown: message.content) {
+                Text(attributedString)
+            } else {
+                // Fallback si le parsing échoue
+                Text(message.content)
+            }
+        } else {
+            // Texte brut pour les messages utilisateur
+            Text(message.content)
+        }
     }
 }
 
