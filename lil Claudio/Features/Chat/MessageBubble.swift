@@ -48,7 +48,8 @@ struct MessageBubble: View {
     private var messageText: some View {
         if message.role == .assistant {
             // Parse markdown pour les réponses de l'assistant
-            if let attributedString = try? AttributedString(markdown: message.content) {
+            // Option .inlineOnlyPreservingWhitespace préserve les sauts de ligne
+            if let attributedString = try? AttributedString(markdown: message.content, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
                 Text(attributedString)
             } else {
                 // Fallback si le parsing échoue

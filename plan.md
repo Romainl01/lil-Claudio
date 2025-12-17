@@ -1099,9 +1099,11 @@ UI updates automatically (thanks to @Observable!)
 
 ### **Additional Features Implemented** 🎉
 
-**Markdown Support:**
+**Markdown Support with Line Breaks:**
 - AI responses now render markdown formatting (`**bold**`, `*italic*`, etc.)
 - Real-time parsing during streaming (formatting appears immediately)
+- ✅ **Line breaks preserved** using `AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)`
+- Smooth animations on text updates (`.animation(.easeInOut(duration: 0.15))`)
 - User messages remain plain text
 
 **Chat Layout Improvements:**

@@ -116,17 +116,22 @@ struct ChatView: View {
     private var streamingBubble: some View {
         HStack(alignment: .bottom, spacing: Spacing.sm) {
             VStack(alignment: .leading, spacing: 4) {
-                // Parse markdown en temps réel pendant le streaming
+                // Parse markdown en temps réel pendant le streaming avec animation
                 Group {
-                    if let output = viewModel?.streamingOutput,
-                       let attributedString = try? AttributedString(markdown: output) {
-                        Text(attributedString)
+                    if let output = viewModel?.streamingOutput {
+                        // Test SANS preprocessing - voir si markdown gère les \n nativement
+                        if let attributedString = try? AttributedString(markdown: output, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                            Text(attributedString)
+                        } else {
+                            Text(output)
+                        }
                     } else {
-                        Text(viewModel?.streamingOutput ?? "")
+                        Text("")
                     }
                 }
                 .font(.bodyText)
                 .foregroundStyle(Color.textNeutralDark)
+                .animation(.easeInOut(duration: 0.15), value: viewModel?.streamingOutput)
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, 12)
                 .background(
