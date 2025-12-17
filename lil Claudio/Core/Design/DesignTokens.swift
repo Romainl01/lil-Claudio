@@ -40,8 +40,9 @@ extension Color {
 
     // MARK: - Text Colors
     static let textPrimary = Color.black                 // Texte principal (#000000)
-    static let textSecondary = Color(hex: "6a7282")      // Texte placeholder
+    static let textSecondary = Color(hex: "6a7282")      // Texte secondaire / placeholder
     static let textNeutralDark = Color(hex: "262629")    // Texte header
+    static let textButtonIcon = Color(hex: "404040")     // Icônes boutons glass (from Figma)
 
     // MARK: - UI Colors
     static let accentPrimary = Color(hex: "f28c59")      // Barre de progression (orange/corail)
@@ -59,11 +60,11 @@ extension Font {
 
 // MARK: - SF Symbols
 enum SFSymbols {
-    static let sendArrow = "arrow.up"           // Bouton envoyer
-    static let stopSquare = "stop.fill"         // Bouton stop génération
-    static let menuIcon = "text.justify.left"   // Bouton gauche header
-    static let helpIcon = "questionmark.circle" // Bouton droite header
-    static let pagerEmoji = "📟"                // Logo app
+    static let sendArrow = "arrow.up"              // Bouton envoyer
+    static let stopSquare = "stop.fill"            // Bouton stop génération
+    static let menuIcon = "line.3.horizontal"      // Bouton gauche header (hambourger)
+    static let helpIcon = "questionmark.circle"    // Bouton droite header
+    static let pagerEmoji = "📟"                   // Logo app
 }
 
 // MARK: - Spacing

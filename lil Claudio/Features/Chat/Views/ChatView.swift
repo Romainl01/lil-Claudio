@@ -30,13 +30,19 @@ struct ChatView: View {
             if viewModel == nil {
                 viewModel = ChatViewModel(modelContext: modelContext)
             }
+
+            // Auto-focus input avec délai de 300ms
+            Task {
+                try? await Task.sleep(for: .milliseconds(300))
+                isInputFocused = true
+            }
         }
     }
 
     // MARK: - Header
     private var header: some View {
         HStack {
-            // Menu button (placeholder)
+            // Menu button
             GlassButton(icon: SFSymbols.menuIcon) {
                 // TODO: Add menu action later
             }
@@ -50,7 +56,7 @@ struct ChatView: View {
 
             Spacer()
 
-            // Help button (placeholder)
+            // Help button
             GlassButton(icon: SFSymbols.helpIcon) {
                 // TODO: Add help action later
             }
@@ -63,7 +69,7 @@ struct ChatView: View {
     private var messageList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: Spacing.md) {
+                VStack {
                     // Empty state: wand.and.sparkles icon
                     if let vm = viewModel, vm.messages.isEmpty && !vm.isGenerating {
                         Spacer()
@@ -71,27 +77,33 @@ struct ChatView: View {
                         Image(systemName: "wand.and.sparkles")
                             .font(.system(size: 48))
                             .foregroundStyle(Color.textSecondary.opacity(0.3))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(.top, 100)
+                            .frame(maxWidth: .infinity)
 
                         Spacer()
                     } else {
-                        // Messages
-                        if let vm = viewModel {
-                            ForEach(vm.messages) { message in
-                                MessageBubble(message: message)
-                                    .id(message.id)
-                            }
+                        // Spacer pour pousser les messages vers le bas
+                        Spacer(minLength: 0)
 
-                            // Streaming response bubble (pendant la génération)
-                            if vm.isGenerating && !vm.streamingOutput.isEmpty {
-                                streamingBubble
-                                    .id("streaming")
+                        // Messages
+                        LazyVStack(spacing: Spacing.md) {
+                            if let vm = viewModel {
+                                ForEach(vm.messages) { message in
+                                    MessageBubble(message: message)
+                                        .id(message.id)
+                                }
+
+                                // Streaming response bubble (pendant la génération)
+                                if vm.isGenerating && !vm.streamingOutput.isEmpty {
+                                    streamingBubble
+                                        .id("streaming")
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
                             }
                         }
+                        .padding(.top, Spacing.md)
+                        .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                     }
                 }
-                .padding(.top, Spacing.md)
             }
             .onAppear {
                 scrollProxy = proxy
@@ -133,17 +145,20 @@ struct ChatView: View {
     // MARK: - Input Area
     private var inputArea: some View {
         HStack(spacing: Spacing.sm) {
-            // Text field
+            // Text field avec liquid glass
             TextField("message", text: Binding(
                 get: { viewModel?.inputText ?? "" },
                 set: { viewModel?.inputText = $0 }
             ), axis: .vertical)
             .font(.inputText)
             .foregroundStyle(Color.textPrimary)
+            .tint(Color.textSecondary) // Couleur du placeholder
             .padding(.horizontal, Spacing.md)
             .padding(.vertical, 14)
-            .background(Color.neutralGray200)
-            .clipShape(RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge))
+            .background {
+                RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge)
+                    .glassEffect(.regular.tint(Color.neutralGray200.opacity(0.6)))
+            }
             .lineLimit(1...5)
             .focused($isInputFocused)
             .onSubmit {
@@ -208,18 +223,10 @@ struct GlassButton: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: size * 0.45, weight: .semibold))
-                .foregroundStyle(isEnabled ? Color.textNeutralDark : Color.textSecondary.opacity(0.5))
+                .foregroundStyle(isEnabled ? Color.textButtonIcon : Color.textSecondary.opacity(0.5))
                 .frame(width: size, height: size)
-                .background(
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-                )
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
         }
+        .glassEffect(.regular.interactive())
         .disabled(!isEnabled)
     }
 }
