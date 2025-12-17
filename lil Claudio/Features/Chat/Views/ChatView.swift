@@ -88,6 +88,10 @@ struct ChatView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isInputFocused = false  // Dismiss keyboard when tapping empty area
+                }
             } else {
                 // Messages: ScrollView avec ancrage en bas
                 ScrollViewReader { proxy in
@@ -111,6 +115,21 @@ struct ChatView: View {
                         .animation(.easeInOut(duration: 0.2), value: viewModel?.streamingOutput)
                     }
                     .defaultScrollAnchor(.bottom)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isInputFocused = false  // Dismiss keyboard
+
+                        // Scroll to bottom to fill space left by keyboard
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            if let vm = viewModel {
+                                if vm.isGenerating {
+                                    scrollProxy?.scrollTo("streaming", anchor: .bottom)
+                                } else if let lastMessage = vm.messages.last {
+                                    scrollProxy?.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
+                            }
+                        }
+                    }
                     .onAppear {
                         scrollProxy = proxy
                     }
