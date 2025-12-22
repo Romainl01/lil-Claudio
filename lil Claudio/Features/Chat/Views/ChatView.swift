@@ -180,46 +180,69 @@ struct ChatView: View {
     // MARK: - Input Area
     private var inputArea: some View {
         HStack(spacing: Spacing.sm) {
-            // Text field avec liquid glass
-            TextField("message", text: Binding(
-                get: { viewModel?.inputText ?? "" },
-                set: { viewModel?.inputText = $0 }
-            ), axis: .vertical)
+            // TextField avec placeholder gris + bouton INSIDE (comme iMessage!)
+            TextField(
+                "",
+                text: Binding(
+                    get: { viewModel?.inputText ?? "" },
+                    set: { viewModel?.inputText = $0 }
+                ),
+                prompt: Text("message").foregroundStyle(Color.gray.opacity(0.4)),
+                axis: .vertical
+            )
             .textFieldStyle(.plain)
             .font(.inputText)
             .foregroundStyle(Color.textPrimary)
-            .tint(Color.textSecondary) // Couleur du placeholder
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, 14)
-            .lineLimit(1...6)
-            .glassEffect(.regular.interactive())
-            .clipShape(RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge))
+            .tint(Color.accentPrimary)
+            .lineLimit(1...5)
+            .fixedSize(horizontal: false, vertical: true)
             .focused($isInputFocused)
             .onSubmit {
                 sendMessage()
             }
 
-            // Send or Stop button
+            // Send/Stop button INSIDE le champ de texte
             if let vm = viewModel {
                 if vm.isGenerating {
                     // Stop button
-                    GlassButton(icon: SFSymbols.stopSquare, size: Dimensions.buttonSize) {
-                        vm.cancelGeneration()
+                    Button(action: { vm.cancelGeneration() }) {
+                        Image(systemName: SFSymbols.stopSquare)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(Color.textButtonIcon)
+                            .frame(width: 32, height: 32)
                     }
                     .transition(.scale.combined(with: .opacity))
                 } else {
                     // Send button
-                    GlassButton(
-                        icon: SFSymbols.sendArrow,
-                        size: Dimensions.buttonSize,
-                        isEnabled: !(vm.inputText.isEmpty)
-                    ) {
-                        sendMessage()
+                    Button(action: sendMessage) {
+                        Image(systemName: SFSymbols.sendArrow)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(vm.inputText.isEmpty ? Color.textSecondary.opacity(0.5) : Color.accentPrimary)
+                            .frame(width: 32, height: 32)
                     }
+                    .disabled(vm.inputText.isEmpty)
                     .transition(.scale.combined(with: .opacity))
                 }
             }
         }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, 12)
+        .background {
+            // Liquid Glass Effect (surface légère pour que le glass fonctionne)
+            RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge, style: .continuous)
+                .fill(Color.white.opacity(0.01))
+                .glassEffect(.regular.interactive())
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge, style: .continuous))
+        .overlay {
+            // Bordure subtile (radius constant: Dimensions.cornerRadiusLarge)
+            RoundedRectangle(cornerRadius: Dimensions.cornerRadiusLarge, style: .continuous)
+                .strokeBorder(
+                    Color.white.opacity(0.3),
+                    lineWidth: 1
+                )
+        }
+        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
         .padding(.horizontal, Spacing.md)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel?.isGenerating)
     }

@@ -613,10 +613,18 @@ Romain Lagrange
 
 ---
 
-**Last Updated:** December 17, 2025
+**Last Updated:** December 22, 2025
 **Current Version:** 0.1.0 (Phase 3, Step 8 in progress - Chat screen UX improvements)
 
 **Recent Updates:**
+- ✅ **UX Fix (Dec 22, 2025):** Fixed liquid glass input field rendering
+  - Replaced `Color.clear` with `Color.white.opacity(0.01)` for glass effect background
+  - Glass effect now renders properly on filled background (not just transparent)
+  - Fixed corner radius consistency (removed GeometryReader/HeightPreferenceKey complexity)
+  - Added gray placeholder text using `.prompt()` modifier (40% opacity)
+  - Input field now matches header button glass quality (translucent, blurred background)
+  - Simplified implementation: single background with RoundedRectangle + clipShape
+  - Line limit increased to 5 lines (from 4) with constant corner radius at all heights
 - ✅ **Feature (Dec 17, 2025):** Added native text selection to messages
   - Created `SelectableText` component using UIViewRepresentable + UITextView
   - Enables double-tap to select word, long-press with handles, Copy/Share menu
